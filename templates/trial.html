@@ -19,6 +19,7 @@
         </div>
 
         <form method="POST" action="{{ url_for('trial_answer') }}" class="riddle-form">
+            <input type="hidden" name="riddle_id" value="{{ riddle_id }}">
             {% for opt in options %}
                 <button type="submit" name="answer" value="{{ opt }}" class="riddle-btn">{{ opt }}</button>
             {% endfor %}
