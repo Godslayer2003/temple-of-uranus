@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
+  if (window.templeAudio) templeAudio.init("home");
+
   if (!window.GodScene) {
     const loading = document.getElementById("scene-loading");
     if (loading) loading.style.display = "none";

@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
-  if (!window.GodScene) return;
   const isOlympus = document.body.dataset.destiny === "olympus";
+  if (window.templeAudio) templeAudio.init(isOlympus ? "olympus" : "underworld");
+
+  if (!window.GodScene) return;
 
   const stage = GodScene.init("destiny-scene", isOlympus
     ? { fog: 0xfbe9c6, fogDensity: 0.035, bg: 0xf3d99a, rim: 0xffe9b0, torch: 0xfff3d0, particleColor: 0xfff6d8, particleCount: 260, columnColor: 0xf3e6c4 }
@@ -31,13 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
     Dialogue.say(nameEl, textEl, deity, nameEl.textContent, line, {
       pitch: isOlympus ? 0.7 : 0.35,
       rate: isOlympus ? 0.9 : 0.75,
+      gender: "male",
     }).then(function () { hearBtn.disabled = false; });
   });
-
-  const musicBtn = document.getElementById("music-btn");
-  if (musicBtn && window.templeAudio) {
-    musicBtn.addEventListener("click", function () {
-      templeAudio.toggle(musicBtn, { on: "🎵 Hear the Realm", off: "🔇 Silence the Realm" });
-    });
-  }
 });

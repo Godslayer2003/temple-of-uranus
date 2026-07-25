@@ -160,7 +160,7 @@
       const snakeGroup = new THREE.Group();
       for (let i = 0; i < 11; i++) {
         const a = (Math.PI * 0.95 * i) / 10 + Math.PI * 0.52;
-        const snake = new THREE.Mesh(new THREE.CapsuleGeometry(0.045, 0.58, 4, 8), skinMat);
+        const snake = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.58, 8), skinMat);
         snake.position.set(Math.cos(a) * 0.56, 0.3 + Math.sin(a) * 0.42, Math.sin(a) * 0.2 - 0.1);
         snake.rotation.z = a - Math.PI / 2;
         snake.userData.baseRotZ = snake.rotation.z;

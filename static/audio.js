@@ -1,28 +1,56 @@
-// Original synthesized "epic ancient war" score — inspired by the mood of
-// early-2010s orchestral war-god game music, not a reproduction of any
-// copyrighted recording. Built entirely from oscillators/noise in-browser,
-// with a generated convolution reverb for cinematic space and a compressor
-// on the master bus for punch.
+// Original synthesized "epic war-god" score, built entirely from
+// oscillators/noise in-browser — inspired by the mood of early-2010s
+// orchestral war-god game scores, not a reproduction of any copyrighted
+// recording. Plays automatically as ambient background music (no visible
+// toggle) with a per-page mood, a real melodic brass motif instead of
+// static chord stabs, layered percussion, a full choir, a dynamic
+// loud/pulled-back arrangement instead of a flat loop, a generated
+// convolution reverb, and a compressor for punch. Also exposes duck()/
+// unduck() so spoken dialogue can be heard clearly over the music.
 
 (function () {
   let ctx = null;
   let master = null;
+  let masterTarget = 0.55;
   let reverbSend = null;
   let playing = false;
   let nextStepTime = 0;
   let stepIndex = 0;
   let schedulerId = null;
+  let currentMode = null;
 
-  const BPM = 84;
-  const STEP_SEC = 60 / BPM; // one beat per step
-  const LOOKAHEAD_MS = 25;
-  const SCHEDULE_AHEAD_SEC = 0.12;
+  // 32-step cycle (4 bars of 8): bars 1-2 are the full "drop", bars 3-4 pull
+  // back to choir + sparse percussion before crashing back in — a real
+  // dynamic arc instead of one flat repeating pattern.
+  const STEPS_PER_CYCLE = 32;
 
-  // strong / medium / rest / fill pattern over 8 beats, repeating
-  const DRUM_PATTERN = ["strong", null, "medium", null, "strong", null, "medium", "fill"];
-  const BRASS_STEPS = new Set([0, 4]);
-  const CHORD = [73.42, 87.31, 110.0]; // D2, F2, A2 — D minor, menacing
-  const PAD_CHORD = [73.42, 110.0, 146.83, 174.61]; // D2, A2, D3, F3 — wider choir spread
+  const MODES = {
+    home: {
+      bpm: 88, root: 73.42, third: 87.31, fifth: 110.0, // D minor
+      pad: [73.42, 110.0, 146.83, 174.61, 220.0],
+      intensity: 0.55, torch: "warm",
+    },
+    trial: {
+      bpm: 80, root: 69.3, third: 82.41, fifth: 103.83, // C#/Db minor, tenser
+      pad: [69.3, 103.83, 138.59, 164.81, 207.65],
+      intensity: 0.5, torch: "warm",
+    },
+    olympus: {
+      bpm: 96, root: 87.31, third: 110.0, fifth: 130.81, // F major-ish, brighter
+      pad: [87.31, 130.81, 174.61, 220.0, 261.63],
+      intensity: 0.5, torch: "bright",
+    },
+    underworld: {
+      bpm: 70, root: 61.74, third: 73.42, fifth: 92.5, // B minor, heavy
+      pad: [61.74, 92.5, 123.47, 146.83, 184.99],
+      intensity: 0.6, torch: "dark",
+    },
+  };
+
+  // Melodic brass motif as semitone offsets from the root, one register up.
+  // Played only in the "drop" bars for a recognizable repeating phrase
+  // instead of static chord stabs.
+  const MOTIF = [0, 3, 5, 3, 7, 10, 7, 3];
 
   function noiseBuffer(seconds) {
     const size = Math.floor(ctx.sampleRate * seconds);
@@ -55,29 +83,31 @@
     return curve;
   }
 
+  function semitoneToFreq(root, semitones) {
+    return root * Math.pow(2, semitones / 12);
+  }
+
   function playDrum(time, strength) {
     const src = ctx.createBufferSource();
     src.buffer = noiseBuffer(0.5);
     const band = ctx.createBiquadFilter();
     band.type = "bandpass";
-    band.frequency.value = strength === "fill" ? 220 : 110;
+    band.frequency.value = strength === "fill" ? 220 : 105;
     band.Q.value = 0.9;
     const gain = ctx.createGain();
     const peak = strength === "strong" ? 1.0 : strength === "fill" ? 0.55 : 0.68;
     gain.gain.setValueAtTime(0.0001, time);
     gain.gain.exponentialRampToValueAtTime(peak, time + 0.008);
     gain.gain.exponentialRampToValueAtTime(0.0001, time + (strength === "fill" ? 0.18 : 0.45));
-    const dry = ctx.createGain();
-    dry.gain.value = 1;
     const wet = ctx.createGain();
     wet.gain.value = 0.35;
     src.connect(band).connect(gain);
-    gain.connect(dry).connect(master);
+    gain.connect(master);
     gain.connect(wet).connect(reverbSend);
     src.start(time);
     src.stop(time + 0.6);
 
-    // sub thump under every drum hit for weight
+    // sub thump under every hit for weight
     const sub = ctx.createOscillator();
     sub.type = "sine";
     sub.frequency.setValueAtTime(95, time);
@@ -90,7 +120,6 @@
     sub.stop(time + 0.35);
 
     if (strength === "fill") {
-      // bright crash accent on the fill beat
       const crash = ctx.createBufferSource();
       crash.buffer = noiseBuffer(0.8);
       const hp = ctx.createBiquadFilter();
@@ -107,45 +136,86 @@
     }
   }
 
-  function playBrassStab(time) {
+  // A short metallic "blade" accent — higher resonant bandpass noise burst,
+  // distinct from the low taiko hits, for a chain-blade-like clang.
+  function playMetal(time) {
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuffer(0.3);
+    const band = ctx.createBiquadFilter();
+    band.type = "bandpass";
+    band.frequency.value = 1500 + Math.random() * 600;
+    band.Q.value = 6;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, time);
+    gain.gain.exponentialRampToValueAtTime(0.22, time + 0.004);
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.3);
+    src.connect(band).connect(gain);
+    gain.connect(master);
+    gain.connect(reverbSend);
+    src.start(time);
+    src.stop(time + 0.35);
+  }
+
+  function playBrassNote(time, freq, dur) {
     const shaper = ctx.createWaveShaper();
     shaper.curve = makeDistortionCurve(14);
     shaper.oversample = "2x";
-
-    CHORD.forEach((freq, i) => {
+    [0, 1].forEach((i) => {
       const osc = ctx.createOscillator();
       osc.type = "sawtooth";
-      osc.frequency.value = freq * 2; // an octave up for brass register
+      osc.frequency.value = freq * (i === 0 ? 1 : 2.005); // slight detune 2nd voice = width
       const filt = ctx.createBiquadFilter();
       filt.type = "lowpass";
-      filt.frequency.setValueAtTime(2200, time);
-      filt.frequency.exponentialRampToValueAtTime(500, time + STEP_SEC * 1.6);
+      filt.frequency.setValueAtTime(2400, time);
+      filt.frequency.exponentialRampToValueAtTime(600, time + dur);
       const gain = ctx.createGain();
       gain.gain.setValueAtTime(0.0001, time);
-      gain.gain.exponentialRampToValueAtTime(0.24 - i * 0.03, time + 0.03);
-      gain.gain.exponentialRampToValueAtTime(0.0001, time + STEP_SEC * 1.8);
+      gain.gain.exponentialRampToValueAtTime(0.2 - i * 0.06, time + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
       osc.connect(filt).connect(shaper).connect(gain);
       gain.connect(master);
       gain.connect(reverbSend);
       osc.start(time);
-      osc.stop(time + STEP_SEC * 2);
+      osc.stop(time + dur + 0.05);
+    });
+  }
+
+  // Short choir "HA" swell accent, layered on top of the sustained pad for
+  // war-chant punctuation on the big downbeats.
+  function playChoirAccent(time, freqs) {
+    freqs.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      osc.type = "sawtooth";
+      osc.frequency.value = freq;
+      const filt = ctx.createBiquadFilter();
+      filt.type = "bandpass";
+      filt.frequency.value = freq * 2.2;
+      filt.Q.value = 1.2;
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, time);
+      gain.gain.exponentialRampToValueAtTime(0.1 - i * 0.012, time + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.9);
+      osc.connect(filt).connect(gain);
+      gain.connect(master);
+      gain.connect(reverbSend);
+      osc.start(time);
+      osc.stop(time + 1);
     });
   }
 
   let droneNodes = [];
-  function startDrone() {
-    PAD_CHORD.forEach((freq, i) => {
+  function startDrone(padChord) {
+    padChord.forEach((freq, i) => {
       const osc = ctx.createOscillator();
       osc.type = i % 2 === 0 ? "sine" : "triangle";
       osc.frequency.value = freq;
       const gain = ctx.createGain();
-      gain.gain.value = 0.075 - i * 0.01;
+      gain.gain.value = 0.065 - i * 0.008;
 
-      // slow choir-like vibrato per voice
       const lfo = ctx.createOscillator();
-      lfo.frequency.value = 0.1 + i * 0.04;
+      lfo.frequency.value = 0.1 + i * 0.035;
       const lfoGain = ctx.createGain();
-      lfoGain.gain.value = 1.2 + i * 0.4;
+      lfoGain.gain.value = 1.1 + i * 0.35;
       lfo.connect(lfoGain).connect(osc.frequency);
 
       const voiceGain = ctx.createGain();
@@ -166,16 +236,31 @@
     droneNodes = [];
   }
 
-  function scheduler() {
-    while (nextStepTime < ctx.currentTime + SCHEDULE_AHEAD_SEC) {
-      const step = stepIndex % DRUM_PATTERN.length;
-      const hit = DRUM_PATTERN[step];
-      if (hit) playDrum(nextStepTime, hit);
-      if (BRASS_STEPS.has(step)) playBrassStab(nextStepTime);
-      nextStepTime += STEP_SEC;
+  function scheduler(cfg, stepSec) {
+    while (nextStepTime < ctx.currentTime + 0.12) {
+      const step = stepIndex % STEPS_PER_CYCLE;
+      const bar = Math.floor(step / 8); // 0,1 = drop bars; 2,3 = pulled-back bars
+      const beat = step % 8;
+      const inDrop = bar < 2;
+
+      if (inDrop) {
+        const pattern = ["strong", null, "medium", "metal", "strong", null, "medium", "fill"];
+        const hit = pattern[beat];
+        if (hit === "metal") playMetal(nextStepTime);
+        else if (hit) playDrum(nextStepTime, hit);
+        playBrassNote(nextStepTime, semitoneToFreq(cfg.root * 4, MOTIF[beat]), stepSec * 1.05);
+      } else {
+        // pulled-back bars: sparse, lets the choir breathe before the crash back in
+        if (beat === 0) playDrum(nextStepTime, "medium");
+        if (beat === 6) playMetal(nextStepTime);
+      }
+
+      if (step === 0) playChoirAccent(nextStepTime, [cfg.root * 2, cfg.third * 2, cfg.fifth * 2]);
+
+      nextStepTime += stepSec;
       stepIndex++;
     }
-    schedulerId = setTimeout(scheduler, LOOKAHEAD_MS);
+    schedulerId = setTimeout(() => scheduler(cfg, stepSec), 25);
   }
 
   function buildAudioGraph() {
@@ -194,7 +279,7 @@
     master.connect(compressor);
 
     const convolver = ctx.createConvolver();
-    convolver.buffer = makeReverbImpulse(2.6, 2.2);
+    convolver.buffer = makeReverbImpulse(2.8, 2.1);
     const reverbOut = ctx.createGain();
     reverbOut.gain.value = 0.9;
     convolver.connect(reverbOut).connect(compressor);
@@ -204,7 +289,10 @@
     reverbSend.connect(convolver);
   }
 
-  function start() {
+  function start(mode) {
+    const cfg = MODES[mode] || MODES.home;
+    currentMode = mode;
+    masterTarget = cfg.intensity;
     if (playing) return;
     if (!ctx) buildAudioGraph();
     if (ctx.state === "suspended") ctx.resume();
@@ -212,40 +300,45 @@
     stepIndex = 0;
     nextStepTime = ctx.currentTime + 0.05;
 
-    // cinematic swell-in rather than an abrupt start
     master.gain.cancelScheduledValues(ctx.currentTime);
     master.gain.setValueAtTime(0.0001, ctx.currentTime);
-    master.gain.exponentialRampToValueAtTime(0.7, ctx.currentTime + 2.2);
+    master.gain.exponentialRampToValueAtTime(masterTarget, ctx.currentTime + 2.6);
 
-    startDrone();
-    scheduler();
+    startDrone(cfg.pad);
+    scheduler(cfg, 60 / cfg.bpm);
   }
 
-  function stop() {
-    playing = false;
-    if (schedulerId) clearTimeout(schedulerId);
-    if (master) {
-      master.gain.cancelScheduledValues(ctx.currentTime);
-      master.gain.setValueAtTime(master.gain.value, ctx.currentTime);
-      master.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 0.6);
-    }
-    setTimeout(stopDrone, 650);
+  // Ambient background music: no toggle UI. Try to start immediately; if the
+  // browser's autoplay policy blocks it (AudioContext stays suspended until
+  // a user gesture), fall back to starting on the very first interaction
+  // anywhere on the page.
+  function init(mode) {
+    start(mode);
+    const resume = () => {
+      if (!ctx) return;
+      if (ctx.state === "suspended") ctx.resume();
+      if (!playing) start(mode);
+      document.removeEventListener("pointerdown", resume);
+      document.removeEventListener("keydown", resume);
+      document.removeEventListener("touchstart", resume);
+    };
+    document.addEventListener("pointerdown", resume, { once: true });
+    document.addEventListener("keydown", resume, { once: true });
+    document.addEventListener("touchstart", resume, { once: true });
   }
 
-  function toggle(btn, labels) {
-    labels = labels || {};
-    const onLabel = labels.on || "🎵 Awaken the Score";
-    const offLabel = labels.off || "🔇 Silence the Gods";
-    if (playing) {
-      stop();
-      btn.textContent = onLabel;
-      btn.classList.remove("playing");
-    } else {
-      start();
-      btn.textContent = offLabel;
-      btn.classList.add("playing");
-    }
+  // Temporarily lower the music so spoken dialogue reads clearly, then
+  // restore it — a soft sidechain-style duck rather than a hard mute.
+  function duck() {
+    if (!ctx || !master) return;
+    master.gain.cancelScheduledValues(ctx.currentTime);
+    master.gain.setTargetAtTime(masterTarget * 0.28, ctx.currentTime, 0.15);
+  }
+  function unduck() {
+    if (!ctx || !master) return;
+    master.gain.cancelScheduledValues(ctx.currentTime);
+    master.gain.setTargetAtTime(masterTarget, ctx.currentTime, 0.4);
   }
 
-  window.templeAudio = { toggle };
+  window.templeAudio = { init, duck, unduck };
 })();
