@@ -39,6 +39,36 @@ RIDDLES = [
     },
 ]
 
+PRESENTERS = [
+    {"key": "zeus", "name": "Zeus, Lord of Olympus",
+     "intros": [
+        "So. A mortal dares approach the throne of the sky.",
+        "Few have the courage to stand before me. Prove it was not folly.",
+     ]},
+    {"key": "poseidon", "name": "Poseidon, Lord of the Sea",
+     "intros": [
+        "The tides brought you to me, little mortal. Let us see if you sink or swim.",
+        "I have drowned sharper minds than yours for lesser insolence. Speak carefully.",
+     ]},
+    {"key": "athena", "name": "Athena, Goddess of Wisdom",
+     "intros": [
+        "Wisdom is not given, mortal — it is earned. Show me you deserve it.",
+        "I favor those who think before they leap. Consider your answer well.",
+     ]},
+]
+
+OLYMPUS_MESSAGES = [
+    "Wisdom recognizes wisdom. Enter the halls of Olympus, seeker — you have earned your place among the gods.",
+    "You have done what few mortals ever do. Olympus opens its gates to you, and the feast awaits.",
+    "Sharp of mind, and worthy of glory. Take your seat among us, child of wisdom.",
+]
+
+UNDERWORLD_MESSAGES = [
+    "Wrong, mortal. Your wisdom failed you. Descend now into the shadow of the Underworld, where all riddles end.",
+    "The Fates are unkind to the foolish. Charon awaits your fare at the river's edge.",
+    "Even the cleverest tongues fall silent here. Welcome to the realm from which none return.",
+]
+
 
 @app.route("/")
 def home():
@@ -57,8 +87,16 @@ def join():
 def trial():
     riddle_id = random.randrange(len(RIDDLES))
     riddle = RIDDLES[riddle_id]
+    presenter = random.choice(PRESENTERS)
+    intro = random.choice(presenter["intros"])
     return render_template(
-        "trial.html", riddle=riddle["question"], options=riddle["options"], riddle_id=riddle_id
+        "trial.html",
+        riddle=riddle["question"],
+        options=riddle["options"],
+        riddle_id=riddle_id,
+        presenter_key=presenter["key"],
+        presenter_name=presenter["name"],
+        intro=intro,
     )
 
 
@@ -77,12 +115,12 @@ def trial_answer():
 
 @app.route("/olympus")
 def olympus():
-    return render_template("olympus.html")
+    return render_template("olympus.html", message=random.choice(OLYMPUS_MESSAGES))
 
 
 @app.route("/underworld")
 def underworld():
-    return render_template("underworld.html")
+    return render_template("underworld.html", message=random.choice(UNDERWORLD_MESSAGES))
 
 
 if __name__ == "__main__":

@@ -4,18 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Trial of the Gods</title>
+    <meta name="description" content="Answer a god's riddle. Succeed and ascend to Olympus — fail, and the Underworld claims you.">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div id="trial-scene" class="scene-canvas"></div>
+    <div class="scene-loading" id="scene-loading">Awakening the realm&hellip;</div>
 
     <p id="riddle-data" hidden>{{ riddle }}</p>
+    <p id="intro-data" hidden>{{ intro }}</p>
+    <p id="presenter-data" hidden>{{ presenter_key }}</p>
 
     <div class="dialogue-overlay">
         <div class="dialogue-box">
-            <div class="speaker-name">Zeus, Lord of Olympus</div>
+            <div class="speaker-name">{{ presenter_name }}</div>
             <p class="dialogue-text" id="dialogue-text">{{ riddle }}</p>
-            <button type="button" id="hear-btn" class="audio-btn">🔊 Hear the God Speak</button>
+            <div class="btn-row">
+                <button type="button" id="hear-btn" class="audio-btn">🔊 Hear the God Speak</button>
+                <button type="button" id="music-btn" class="audio-btn">🎵 Stir the Score</button>
+            </div>
         </div>
 
         <form method="POST" action="{{ url_for('trial_answer') }}" class="riddle-form">
@@ -35,8 +43,10 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="{{ url_for('static', filename='scene.js') }}"></script>
     <script src="{{ url_for('static', filename='dialogue.js') }}"></script>
+    <script src="{{ url_for('static', filename='audio.js') }}"></script>
     <script src="{{ url_for('static', filename='trial.js') }}"></script>
 </body>
 </html>

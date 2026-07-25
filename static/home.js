@@ -1,5 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
-  if (!window.GodScene) return;
+  if (!window.GodScene) {
+    const loading = document.getElementById("scene-loading");
+    if (loading) loading.style.display = "none";
+    return;
+  }
   const stage = GodScene.init("home-scene", {
     fog: 0x0e0e1a, fogDensity: 0.045, bg: 0x0e0e1a, rim: 0x6a2fce, torch: 0xffb35c,
     particleColor: 0xa98fff, particleCount: 220,

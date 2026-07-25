@@ -33,4 +33,11 @@ document.addEventListener("DOMContentLoaded", function () {
       rate: isOlympus ? 0.9 : 0.75,
     }).then(function () { hearBtn.disabled = false; });
   });
+
+  const musicBtn = document.getElementById("music-btn");
+  if (musicBtn && window.templeAudio) {
+    musicBtn.addEventListener("click", function () {
+      templeAudio.toggle(musicBtn, { on: "🎵 Hear the Realm", off: "🔇 Silence the Realm" });
+    });
+  }
 });

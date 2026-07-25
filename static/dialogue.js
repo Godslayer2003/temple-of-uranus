@@ -34,14 +34,22 @@
     if (!bust || !bust.userData.mouth) return () => {};
     let raf;
     const mouth = bust.userData.mouth;
+    const head = bust.userData.head;
     const baseY = mouth.scale.y;
+    const baseHeadX = head ? head.rotation.x : 0;
     function tick() {
       const speaking = window.speechSynthesis && window.speechSynthesis.speaking;
       mouth.scale.y = speaking ? baseY * (0.6 + Math.random() * 2.2) : baseY;
+      if (head) {
+        head.rotation.x = speaking ? baseHeadX + Math.sin(Date.now() * 0.006) * 0.03 : baseHeadX;
+      }
       raf = requestAnimationFrame(tick);
     }
     tick();
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      if (head) head.rotation.x = baseHeadX;
+    };
   }
 
   async function say(nameEl, textEl, bust, name, text, voiceOpts) {

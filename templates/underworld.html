@@ -4,17 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Underworld Claims You</title>
+    <meta name="description" content="Your wisdom failed you. The Underworld awaits.">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body data-destiny="underworld">
     <div id="destiny-scene" class="scene-canvas"></div>
+    <div class="scene-loading" id="scene-loading">Awakening the realm&hellip;</div>
 
     <div class="dialogue-overlay">
         <div class="dialogue-box">
             <h1 class="destiny-title">You Have Fallen</h1>
             <div class="speaker-name">Hades, Lord of the Underworld</div>
-            <p class="dialogue-text" id="dialogue-text">Wrong, mortal. Your wisdom failed you. Descend now into the shadow of the Underworld, where all riddles end.</p>
-            <button type="button" id="hear-btn" class="audio-btn">🔊 Hear the God Speak</button>
+            <p class="dialogue-text" id="dialogue-text">{{ message }}</p>
+            <div class="btn-row">
+                <button type="button" id="hear-btn" class="audio-btn">🔊 Hear the God Speak</button>
+                <button type="button" id="music-btn" class="audio-btn">🎵 Hear the Realm</button>
+            </div>
         </div>
         <a href="{{ url_for('home') }}" class="back-link">← Return to the Temple</a>
     </div>
@@ -26,8 +32,10 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="{{ url_for('static', filename='scene.js') }}"></script>
     <script src="{{ url_for('static', filename='dialogue.js') }}"></script>
+    <script src="{{ url_for('static', filename='audio.js') }}"></script>
     <script src="{{ url_for('static', filename='destiny.js') }}"></script>
 </body>
 </html>

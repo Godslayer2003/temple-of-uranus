@@ -232,14 +232,17 @@
     setTimeout(stopDrone, 650);
   }
 
-  function toggle(btn) {
+  function toggle(btn, labels) {
+    labels = labels || {};
+    const onLabel = labels.on || "🎵 Awaken the Score";
+    const offLabel = labels.off || "🔇 Silence the Gods";
     if (playing) {
       stop();
-      btn.textContent = "🎵 Awaken the Score";
+      btn.textContent = onLabel;
       btn.classList.remove("playing");
     } else {
       start();
-      btn.textContent = "🔇 Silence the Gods";
+      btn.textContent = offLabel;
       btn.classList.add("playing");
     }
   }

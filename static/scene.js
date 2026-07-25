@@ -2,9 +2,13 @@
 // template). One procedural bust builder is reused everywhere (home
 // pantheon, the Trial, Olympus, the Underworld): real geometry, a
 // canvas-generated marble texture (no external image assets), real 3D
-// weapons held in-hand, temple columns, a particle atmosphere, optional
-// bloom post-processing (feature-detected, falls back cleanly if the
-// addon scripts didn't load), and a cinematic camera dolly-in on load.
+// weapons held in-hand, real sculpted temple columns and vases (CC0 glTF
+// models, loaded progressively — primitives show immediately, swapped for
+// the real models once they load), a particle atmosphere, optional bloom
+// post-processing (feature-detected, falls back cleanly if the addon
+// scripts didn't load), a cinematic camera dolly-in, and "alive" behavior
+// on every figure: blinking, idle breathing, and heads that turn to track
+// the cursor.
 
 (function () {
   function marbleTexture(THREE, tint) {
@@ -95,7 +99,7 @@
     robe.position.y = 1.37;
     group.add(robe);
 
-    // shoulders for silhouette bulk
+    // shoulders for silhouette bulk, and the anchor for idle-breathing motion
     const shoulders = new THREE.Mesh(new THREE.SphereGeometry(0.58, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2), skinMat);
     shoulders.position.y = 2.18;
     group.add(shoulders);
@@ -104,48 +108,51 @@
     neck.position.y = 2.3;
     group.add(neck);
 
+    const headPivot = new THREE.Group();
+    headPivot.position.y = 2.78;
+    group.add(headPivot);
+
     const head = new THREE.Mesh(new THREE.SphereGeometry(0.55, 24, 18), skinMat);
-    head.position.y = 2.78;
     head.scale.set(1, 1.14, 0.94);
-    group.add(head);
+    headPivot.add(head);
 
     const eyeGeo = new THREE.SphereGeometry(0.065, 10, 8);
     const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
-    eyeL.position.set(-0.19, 2.8, 0.49);
+    eyeL.position.set(-0.19, 0.02, 0.49);
     const eyeR = eyeL.clone();
     eyeR.position.x = 0.19;
-    group.add(eyeL, eyeR);
+    headPivot.add(eyeL, eyeR);
     const eyeGlowL = new THREE.PointLight(cfg.eye, 0.12, 1.2);
     eyeGlowL.position.copy(eyeL.position);
     const eyeGlowR = eyeGlowL.clone();
     eyeGlowR.position.copy(eyeR.position);
-    group.add(eyeGlowL, eyeGlowR);
+    headPivot.add(eyeGlowL, eyeGlowR);
 
     const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.06, 0.06), accentMat);
-    mouth.position.set(0, 2.52, 0.53);
-    group.add(mouth);
+    mouth.position.set(0, -0.26, 0.53);
+    headPivot.add(mouth);
 
     if (cfg.beard) {
       const beard = new THREE.Mesh(new THREE.ConeGeometry(0.34, 0.62, 12), accentMat);
-      beard.position.set(0, 2.32, 0.18);
+      beard.position.set(0, -0.46, 0.18);
       beard.rotation.x = Math.PI;
-      group.add(beard);
+      headPivot.add(beard);
     }
 
     if (cfg.helmet) {
       const helmet = new THREE.Mesh(new THREE.ConeGeometry(0.63, 0.72, 12), accentMat);
-      helmet.position.y = 3.18;
-      group.add(helmet);
+      helmet.position.y = 0.4;
+      headPivot.add(helmet);
       const crest = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.5, 0.72), glowMat);
-      crest.position.y = 3.54;
-      group.add(crest);
+      crest.position.y = 0.76;
+      headPivot.add(crest);
     } else if (!cfg.snakes) {
       for (let i = 0; i < 11; i++) {
         const a = Math.PI * (0.12 + (i / 10) * 0.76);
         const strand = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.02, 0.36, 6), accentMat);
-        strand.position.set(Math.cos(a) * 0.5, 3.08 + Math.sin(a) * 0.26, Math.sin(a) * 0.16 - 0.1);
+        strand.position.set(Math.cos(a) * 0.5, 0.3 + Math.sin(a) * 0.26, Math.sin(a) * 0.16 - 0.1);
         strand.rotation.z = a - Math.PI / 2;
-        group.add(strand);
+        headPivot.add(strand);
       }
     }
 
@@ -154,13 +161,13 @@
       for (let i = 0; i < 11; i++) {
         const a = (Math.PI * 0.95 * i) / 10 + Math.PI * 0.52;
         const snake = new THREE.Mesh(new THREE.CapsuleGeometry(0.045, 0.58, 4, 8), skinMat);
-        snake.position.set(Math.cos(a) * 0.56, 3.08 + Math.sin(a) * 0.42, Math.sin(a) * 0.2 - 0.1);
+        snake.position.set(Math.cos(a) * 0.56, 0.3 + Math.sin(a) * 0.42, Math.sin(a) * 0.2 - 0.1);
         snake.rotation.z = a - Math.PI / 2;
         snake.userData.baseRotZ = snake.rotation.z;
         snake.userData.phase = Math.random() * Math.PI * 2;
         snakeGroup.add(snake);
       }
-      group.add(snakeGroup);
+      headPivot.add(snakeGroup);
       group.userData.snakes = snakeGroup;
     }
 
@@ -172,9 +179,11 @@
       group.userData.weapon = weapon;
     }
 
-    group.userData.head = head;
+    group.userData.head = headPivot;
     group.userData.mouth = mouth;
     group.userData.eyes = [eyeL, eyeR];
+    group.userData.chest = shoulders;
+    group.userData.nextBlink = 1 + Math.random() * 3;
     group.scale.setScalar(cfg.scale);
     group.traverse((o) => { o.castShadow = true; o.receiveShadow = true; });
     return group;
@@ -197,6 +206,22 @@
       g.add(col);
     }
     return g;
+  }
+
+  // Loads the real CC0 glTF props (sculpted columns/vases) in the background
+  // and swaps them in once ready. Primitive geometry renders immediately so
+  // the scene is never empty while this resolves.
+  function loadRealProps(THREE) {
+    if (!THREE.GLTFLoader) return Promise.resolve({});
+    const loader = new THREE.GLTFLoader();
+    const load = (url) =>
+      new Promise((resolve) => {
+        loader.load(url, (gltf) => resolve(gltf.scene), undefined, () => resolve(null));
+      });
+    return Promise.all([
+      load("/static/models/greek_column_01/greek_column_01.glb"),
+      load("/static/models/greek_vase_01/greek_vase_01.glb"),
+    ]).then(([column, vase]) => ({ column, vase }));
   }
 
   function buildParticles(THREE, count, color, spread, size) {
@@ -228,6 +253,11 @@
     } catch (e) {
       return null;
     }
+  }
+
+  function hideLoading() {
+    const el = document.getElementById("scene-loading");
+    if (el) el.style.display = "none";
   }
 
   function init(containerId, opts) {
@@ -285,7 +315,33 @@
     scene.add(ground);
 
     const columnMat = new THREE.MeshStandardMaterial({ map: marbleTexture(THREE, "#" + new THREE.Color(opts.columnColor).getHexString()), roughness: 0.75 });
-    scene.add(buildColumns(THREE, columnMat, 5, 7.5));
+    const columnRadius = 7.5;
+    const columnCount = 5;
+    const columnsGroup = buildColumns(THREE, columnMat, columnCount, columnRadius);
+    scene.add(columnsGroup);
+
+    loadRealProps(THREE).then(({ column, vase }) => {
+      if (column) {
+        const positions = columnsGroup.children.map((c) => c.position.clone());
+        columnsGroup.clear();
+        positions.forEach((pos) => {
+          const real = column.clone(true);
+          real.scale.setScalar(1.8);
+          real.position.copy(pos);
+          real.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+          scene.add(real);
+        });
+      }
+      if (vase) {
+        [[-3.2, -2.8], [3.2, -2.8]].forEach(([x, z]) => {
+          const v = vase.clone(true);
+          v.scale.setScalar(1.3);
+          v.position.set(x, 0, z);
+          v.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+          scene.add(v);
+        });
+      }
+    });
 
     const particles = buildParticles(THREE, opts.particleCount, opts.particleColor, 16, opts.particleSize || 0.06);
     scene.add(particles);
@@ -333,6 +389,7 @@
 
       rig.children.forEach((bust, i) => {
         bust.position.y = Math.sin(t * 0.8 + i) * 0.05;
+
         if (bust.userData.snakes) {
           bust.userData.snakes.children.forEach((s) => {
             s.rotation.z = s.userData.baseRotZ + Math.sin(t * 3 + s.userData.phase) * 0.25;
@@ -341,15 +398,45 @@
         if (bust.userData.weapon) {
           bust.userData.weapon.rotation.z = -0.18 + Math.sin(t * 1.4 + i) * 0.05;
         }
+
+        // idle breathing
+        if (bust.userData.chest) {
+          const breathe = 1 + Math.sin(t * 1.1 + i) * 0.015;
+          bust.userData.chest.scale.set(breathe, 1, breathe);
+        }
+
+        // head turns to track the cursor, independent of the whole-rig parallax
+        if (bust.userData.head) {
+          const targetY = mouseX * 0.18;
+          bust.userData.head.rotation.y += (targetY - bust.userData.head.rotation.y) * 0.03;
+        }
+
+        // blinking
+        if (bust.userData.eyes) {
+          if (t > bust.userData.nextBlink && !bust.userData.blinking) {
+            bust.userData.blinking = true;
+            bust.userData.blinkStart = t;
+          }
+          if (bust.userData.blinking) {
+            const dt = t - bust.userData.blinkStart;
+            const closeAmt = dt < 0.06 ? dt / 0.06 : dt < 0.12 ? 1 - (dt - 0.06) / 0.06 : 0;
+            bust.userData.eyes.forEach((e) => { e.scale.y = 1 - closeAmt * 0.92; });
+            if (dt > 0.12) {
+              bust.userData.blinking = false;
+              bust.userData.nextBlink = t + 2 + Math.random() * 4;
+            }
+          }
+        }
       });
 
       if (composer) composer.render();
       else renderer.render(scene, camera);
     }
     animate();
+    hideLoading();
 
     return { THREE, scene, camera, renderer, rig, container };
   }
 
-  window.GodScene = { init, buildBust };
+  window.GodScene = { init, buildBust, hideLoading };
 })();
