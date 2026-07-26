@@ -151,6 +151,75 @@
     return group;
   }
 
+  // Real CC0 low-poly skeleton ("LowPoly Animated Monsters" by Quaternius,
+  // itch.io) — a second, genuinely different sourced model, used only for
+  // the Underworld/Hades figure. Untextured (flat vertex-color material in
+  // the source file), so unlike the warrior it's tinted with a plain
+  // MeshStandardMaterial color rather than a photo texture. Loaded lazily
+  // (only when buildRealSkeleton is actually called) since it's only used
+  // on one page, not preloaded on every scene like the warrior model.
+  let skeletonModel = null;
+  let skeletonLoading = null;
+  const pendingSkeletons = [];
+
+  function loadSkeletonModel(THREE) {
+    if (skeletonLoading) return skeletonLoading;
+    skeletonLoading = new Promise((resolve) => {
+      if (!THREE.OBJLoader) { resolve(null); return; }
+      new THREE.OBJLoader().load(
+        "/static/models/skeleton/Skeleton.obj",
+        (obj) => {
+          skeletonModel = obj;
+          pendingSkeletons.forEach(({ group, tint }) => fillSkeleton(THREE, group, tint));
+          pendingSkeletons.length = 0;
+          resolve(obj);
+        },
+        undefined,
+        () => resolve(null)
+      );
+    });
+    return skeletonLoading;
+  }
+
+  function fillSkeleton(THREE, group, tint) {
+    const model = skeletonModel.clone(true);
+    model.traverse((o) => {
+      if (o.isMesh) {
+        o.material = new THREE.MeshStandardMaterial({ color: tint, roughness: 0.75, metalness: 0.05 });
+        o.castShadow = true;
+        o.receiveShadow = true;
+      }
+    });
+    const box = new THREE.Box3().setFromObject(model);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const scale = 3.0 / (size.y || 1);
+    model.scale.setScalar(scale);
+    const box2 = new THREE.Box3().setFromObject(model);
+    const center2 = new THREE.Vector3();
+    box2.getCenter(center2);
+    model.position.set(-center2.x, -box2.min.y + 0.5, -center2.z);
+
+    const pedestal = new THREE.Mesh(
+      new THREE.BoxGeometry(1.7, 0.5, 1.2),
+      new THREE.MeshStandardMaterial({ color: tint, roughness: 0.7 })
+    );
+    pedestal.position.y = 0.25;
+
+    group.add(model, pedestal);
+  }
+
+  function buildRealSkeleton(THREE, cfg) {
+    cfg = Object.assign({ tint: 0xd8cba8, scale: 1 }, cfg);
+    const group = new THREE.Group();
+    group.userData.isRealModel = true;
+    group.scale.setScalar(cfg.scale);
+    loadSkeletonModel(THREE);
+    if (skeletonModel) fillSkeleton(THREE, group, cfg.tint);
+    else pendingSkeletons.push({ group, tint: cfg.tint });
+    return group;
+  }
+
   function weaponMesh(THREE, kind, mat, glowMat) {
     const g = new THREE.Group();
     if (kind === "bolt") {
@@ -559,5 +628,5 @@
     return { THREE, scene, camera, renderer, rig, container };
   }
 
-  window.GodScene = { init, buildBust, buildRealWarrior, hideLoading };
+  window.GodScene = { init, buildBust, buildRealWarrior, buildRealSkeleton, hideLoading };
 })();

@@ -329,6 +329,22 @@ body::before {
 }
 .photo-credit a { color: inherit; }
 
+.music-credit {
+    position: fixed;
+    left: 0.75rem;
+    bottom: 0.5rem;
+    z-index: 3;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.5px;
+    color: rgba(240, 230, 210, 0.45);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    max-width: 46vw;
+}
+@media (max-width: 600px) {
+    .music-credit { font-size: 0.6rem; max-width: 60vw; }
+}
+
 /* smooth the hard cut from photo to solid background */
 .banner::after {
     content: "";

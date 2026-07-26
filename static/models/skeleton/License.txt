@@ -1,0 +1,13 @@
+Source: https://quaternius.itch.io/lowpoly-animated-monsters
+Pack: "LowPoly Animated Monsters" by Quaternius
+Model used: Skeleton.obj / Skeleton.mtl (one model out of the pack's
+bat/dragon/skeleton/slime set)
+
+License: CC0 1.0 Universal (public domain dedication)
+Full license: https://creativecommons.org/publicdomain/zero/1.0/
+No attribution legally required. Credit given anyway: Quaternius
+(quaternius.com), no generative AI was used per the pack's own listing.
+
+Used in static/scene.js (buildRealSkeleton) as the Underworld/Hades
+figure in templates/underworld.html, in place of a recolored copy of
+the Achilles warrior mesh used for the Olympian gods elsewhere.

@@ -20,10 +20,9 @@ document.addEventListener("DOMContentLoaded", function () {
     );
 
     if (stage) {
-      deity = GodScene.buildRealWarrior(stage.THREE, isOlympus
-        ? { tint: 0xffdd66, scale: 1.2 }
-        : { tint: 0x3a1a1a, scale: 1.2 }
-      );
+      deity = isOlympus
+        ? GodScene.buildRealWarrior(stage.THREE, { tint: 0xffdd66, scale: 1.2 })
+        : GodScene.buildRealSkeleton(stage.THREE, { tint: 0xcabb98, scale: 1.15 });
       deity.position.set(0, -0.6, 0);
       stage.rig.add(deity);
 

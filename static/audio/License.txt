@@ -1,0 +1,17 @@
+home.mp3 / trial.mp3 / olympus.mp3 — CC0, sourced from OpenGameArt.org,
+compressed with ffmpeg. (Pre-existing tracks; see project history.)
+
+underworld.mp3 — real orchestral recording, not a game-music loop:
+  Gustav Holst, "Mars, the Bringer of War" (from The Planets, Op. 32)
+  Performed by the Skidmore College Orchestra, 1914.
+  Source: https://commons.wikimedia.org/wiki/File:Gustav_Holst_-_the_planets,_op._32_-_i._mars,_the_bringer_of_war.ogg
+  Original file: Wikimedia Commons, public domain recording, released by
+  Musopen under an attribution-only license.
+  Credit (displayed on-page via .music-credit in templates/underworld.html —
+  do not remove that element if this track stays in use):
+    Holst - "Mars, the Bringer of War" (1914 rec., Skidmore College Orchestra) via Musopen
+  Re-encoded from the original .ogg to 96kbps MP3 with ffmpeg for file size;
+  no other alteration.
+  Note: this is a historical (1914) recording, so it has the frequency
+  range and surface noise of acoustic-era recording equipment rather than
+  modern studio fidelity. Real orchestra, real recording, antique sound.
