@@ -375,7 +375,6 @@ body::before {
     color: rgba(240, 230, 210, 0.55);
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
-.photo-credit a { color: inherit; }
 
 .music-credit {
     position: fixed;
@@ -610,6 +609,7 @@ body[data-destiny="underworld"] .destiny-title { color: #ff8a6a; text-shadow: 0 
     color: var(--gold);
     border: 2px solid var(--gold-dim);
     padding: 0.55rem 1.4rem;
+    font-family: var(--font-body);
     font-size: 0.95rem;
     border-radius: 999px;
     cursor: pointer;
@@ -708,6 +708,7 @@ body[data-destiny="underworld"] .destiny-title { color: #ff8a6a; text-shadow: 0 
     border: 1px solid rgba(212, 175, 55, 0.4);
     background: rgba(8, 6, 16, 0.4);
     color: rgba(240, 230, 210, 0.6);
+    font-family: var(--font-body);
     font-size: 0.95rem;
     line-height: 1;
     cursor: pointer;
@@ -718,7 +719,15 @@ body[data-destiny="underworld"] .destiny-title { color: #ff8a6a; text-shadow: 0 
     opacity: 0.55;
 }
 .mute-toggle:hover { opacity: 1; background: rgba(8, 6, 16, 0.7); transform: translateY(-2px); }
-.mute-toggle:focus-visible, .temple-gate:focus-visible {
+/* Every interactive element gets the same gold focus ring instead of
+   each browser's mismatched default (blue on Chrome/Edge, different on
+   Firefox/Safari) — was previously only set for the two newest elements. */
+.mute-toggle:focus-visible,
+.temple-gate:focus-visible,
+.join-btn:focus-visible,
+.riddle-btn:focus-visible,
+.audio-btn:focus-visible,
+.back-link:focus-visible {
     outline: 2px solid var(--gold-bright);
     outline-offset: 2px;
 }
