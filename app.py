@@ -88,7 +88,8 @@ def trial():
     riddle_id = random.randrange(len(RIDDLES))
     riddle = RIDDLES[riddle_id]
     presenter = random.choice(PRESENTERS)
-    intro = random.choice(presenter["intros"])
+    intro_index = random.randrange(len(presenter["intros"]))
+    intro = presenter["intros"][intro_index]
     return render_template(
         "trial.html",
         riddle=riddle["question"],
@@ -97,6 +98,7 @@ def trial():
         presenter_key=presenter["key"],
         presenter_name=presenter["name"],
         intro=intro,
+        intro_index=intro_index,
     )
 
 
@@ -115,12 +117,14 @@ def trial_answer():
 
 @app.route("/olympus")
 def olympus():
-    return render_template("olympus.html", message=random.choice(OLYMPUS_MESSAGES))
+    idx = random.randrange(len(OLYMPUS_MESSAGES))
+    return render_template("olympus.html", message=OLYMPUS_MESSAGES[idx], message_index=idx)
 
 
 @app.route("/underworld")
 def underworld():
-    return render_template("underworld.html", message=random.choice(UNDERWORLD_MESSAGES))
+    idx = random.randrange(len(UNDERWORLD_MESSAGES))
+    return render_template("underworld.html", message=UNDERWORLD_MESSAGES[idx], message_index=idx)
 
 
 if __name__ == "__main__":

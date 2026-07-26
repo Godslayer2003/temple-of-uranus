@@ -11,6 +11,7 @@
 <body data-destiny="olympus">
     <div id="destiny-scene" class="scene-canvas"></div>
     <div class="scene-loading" id="scene-loading">Awakening the realm&hellip;</div>
+    <p id="message-index-data" hidden>{{ message_index }}</p>
 
     <div class="dialogue-overlay">
         <div class="dialogue-box">
@@ -32,6 +33,7 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
     <script src="{{ url_for('static', filename='scene.js') }}"></script>
     <script src="{{ url_for('static', filename='dialogue.js') }}"></script>
     <script src="{{ url_for('static', filename='audio.js') }}"></script>

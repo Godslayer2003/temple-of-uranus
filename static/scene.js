@@ -11,12 +11,20 @@
 // the cursor.
 
 (function () {
-  function marbleTexture(THREE, tint) {
+  // Real photographed marble (Poly Haven, CC0) is loaded once and shared
+  // across every bust. Canvas-noise is only the immediate placeholder for
+  // the instant before the photo finishes loading — every material that
+  // used it gets retroactively swapped once the real texture is ready.
+  let realMarbleTex = null;
+  let realMarbleLoading = null;
+  const pendingSkinMaterials = [];
+
+  function proceduralMarbleTexture(THREE) {
     const size = 256;
     const canvas = document.createElement("canvas");
     canvas.width = canvas.height = size;
     const ctx = canvas.getContext("2d");
-    ctx.fillStyle = tint || "#d9cdae";
+    ctx.fillStyle = "#d9cdae";
     ctx.fillRect(0, 0, size, size);
     for (let i = 0; i < 42; i++) {
       ctx.strokeStyle = `rgba(55,45,30,${0.08 + Math.random() * 0.14})`;
@@ -34,6 +42,113 @@
     const tex = new THREE.CanvasTexture(canvas);
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
     return tex;
+  }
+
+  function loadRealMarble(THREE) {
+    if (realMarbleLoading) return realMarbleLoading;
+    realMarbleLoading = new Promise((resolve) => {
+      new THREE.TextureLoader().load(
+        "/static/textures/marble.jpg",
+        (tex) => {
+          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          tex.repeat.set(1.6, 1.6);
+          realMarbleTex = tex;
+          pendingSkinMaterials.forEach((m) => { m.map = tex; m.needsUpdate = true; });
+          resolve(tex);
+        },
+        undefined,
+        () => resolve(null)
+      );
+    });
+    return realMarbleLoading;
+  }
+
+  function loadBackgroundPhoto(THREE, scene, url) {
+    new THREE.TextureLoader().load(url, (tex) => {
+      scene.background = tex;
+    });
+  }
+
+  // Real sculpted Greek-warrior model (CC0, "Achilles Spartan Greek
+  // Warrior" by gamekorp on OpenGameArt) — a genuine detailed 3D character,
+  // not procedural primitives. One shared mesh, re-tinted per god the same
+  // way the marble is re-tinted: material.color multiplies the photo
+  // texture, so Zeus/Poseidon/Ares/Hades/Athena each read distinctly from
+  // one real asset. No built-in rig, so blink/talk facial animation (which
+  // needs separate mouth/eye sub-meshes) isn't available on this model —
+  // idle sway and camera-facing tracking still apply to the whole figure.
+  let warriorModel = null;
+  let warriorTex = null;
+  let warriorLoading = null;
+  const pendingWarriors = [];
+
+  function loadWarriorModel(THREE) {
+    if (warriorLoading) return warriorLoading;
+    warriorLoading = new Promise((resolve) => {
+      if (!THREE.OBJLoader) { resolve(null); return; }
+      new THREE.TextureLoader().load(
+        "/static/models/achilles/texture.jpg",
+        (tex) => {
+          new THREE.OBJLoader().load(
+            "/static/models/achilles/mesh.obj",
+            (obj) => {
+              warriorModel = obj;
+              warriorTex = tex;
+              pendingWarriors.forEach(({ group, tint }) => fillWarrior(THREE, group, tint));
+              pendingWarriors.length = 0;
+              resolve(obj);
+            },
+            undefined,
+            () => resolve(null)
+          );
+        },
+        undefined,
+        () => resolve(null)
+      );
+    });
+    return warriorLoading;
+  }
+
+  function fillWarrior(THREE, group, tint) {
+    const model = warriorModel.clone(true);
+    model.traverse((o) => {
+      if (o.isMesh) {
+        o.material = new THREE.MeshStandardMaterial({ map: warriorTex, color: tint, roughness: 0.65, metalness: 0.12 });
+        o.castShadow = true;
+        o.receiveShadow = true;
+      }
+    });
+    const box = new THREE.Box3().setFromObject(model);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const scale = 3.2 / (size.y || 1);
+    model.scale.setScalar(scale);
+    const box2 = new THREE.Box3().setFromObject(model);
+    const center2 = new THREE.Vector3();
+    box2.getCenter(center2);
+    model.position.set(-center2.x, -box2.min.y + 0.5, -center2.z);
+
+    const pedestal = new THREE.Mesh(
+      new THREE.BoxGeometry(1.7, 0.5, 1.2),
+      new THREE.MeshStandardMaterial({ color: tint, roughness: 0.7 })
+    );
+    pedestal.position.y = 0.25;
+
+    group.add(model, pedestal);
+  }
+
+  // Returns a group positioned/scaled like buildBust()'s output. Renders
+  // empty for the brief moment before the model finishes loading (the
+  // scene-loading overlay covers most of that window already), then
+  // populates in place once ready.
+  function buildRealWarrior(THREE, cfg) {
+    cfg = Object.assign({ tint: 0xd9cdad, scale: 1 }, cfg);
+    const group = new THREE.Group();
+    group.userData.isRealModel = true;
+    group.scale.setScalar(cfg.scale);
+    if (warriorModel) fillWarrior(THREE, group, cfg.tint);
+    else pendingWarriors.push({ group, tint: cfg.tint });
+    return group;
   }
 
   function weaponMesh(THREE, kind, mat, glowMat) {
@@ -85,8 +200,9 @@
     }, cfg);
 
     const group = new THREE.Group();
-    const tex = marbleTexture(THREE, "#" + new THREE.Color(cfg.skin).getHexString());
-    const skinMat = new THREE.MeshStandardMaterial({ map: tex, color: 0xffffff, roughness: 0.55, metalness: 0.06 });
+    const tex = realMarbleTex || proceduralMarbleTexture(THREE);
+    const skinMat = new THREE.MeshStandardMaterial({ map: tex, color: cfg.skin, roughness: 0.55, metalness: 0.06 });
+    if (!realMarbleTex) pendingSkinMaterials.push(skinMat);
     const accentMat = new THREE.MeshStandardMaterial({ color: cfg.accent, roughness: 0.6, metalness: 0.25 });
     const eyeMat = new THREE.MeshStandardMaterial({ color: cfg.eye, emissive: cfg.eye, emissiveIntensity: cfg.eyeIntensity, roughness: 0.3 });
     const glowMat = new THREE.MeshStandardMaterial({ color: cfg.accent, emissive: cfg.accent, emissiveIntensity: 0.9, roughness: 0.35, metalness: 0.4 });
@@ -268,13 +384,16 @@
     opts = Object.assign({
       fog: 0x0e0e1a, fogDensity: 0.05, bg: 0x0e0e1a, torch: 0xffb35c,
       rim: 0x6a2fce, groundColor: 0x141420, particleColor: 0xffcf8a,
-      particleCount: 260, columnColor: 0xbfb59a,
+      particleCount: 260, columnColor: 0xbfb59a, skyPhoto: null,
       cameraRest: [0, 2.6, 8.5], cameraStart: [0, 6.5, 16], lookAt: [0, 2.2, 0],
     }, opts);
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(opts.bg);
     scene.fog = new THREE.FogExp2(opts.fog, opts.fogDensity);
+    loadRealMarble(THREE);
+    loadWarriorModel(THREE);
+    if (opts.skyPhoto) loadBackgroundPhoto(THREE, scene, opts.skyPhoto);
 
     const camera = new THREE.PerspectiveCamera(42, container.clientWidth / container.clientHeight, 0.1, 80);
     const restPos = new THREE.Vector3().fromArray(opts.cameraRest);
@@ -314,7 +433,9 @@
     ground.name = "ground";
     scene.add(ground);
 
-    const columnMat = new THREE.MeshStandardMaterial({ map: marbleTexture(THREE, "#" + new THREE.Color(opts.columnColor).getHexString()), roughness: 0.75 });
+    const columnTex = realMarbleTex || proceduralMarbleTexture(THREE);
+    const columnMat = new THREE.MeshStandardMaterial({ map: columnTex, color: opts.columnColor, roughness: 0.75 });
+    if (!realMarbleTex) pendingSkinMaterials.push(columnMat);
     const columnRadius = 7.5;
     const columnCount = 5;
     const columnsGroup = buildColumns(THREE, columnMat, columnCount, columnRadius);
@@ -438,5 +559,5 @@
     return { THREE, scene, camera, renderer, rig, container };
   }
 
-  window.GodScene = { init, buildBust, hideLoading };
+  window.GodScene = { init, buildBust, buildRealWarrior, hideLoading };
 })();

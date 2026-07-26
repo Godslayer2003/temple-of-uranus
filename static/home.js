@@ -15,15 +15,15 @@ document.addEventListener("DOMContentLoaded", function () {
   const T = stage.THREE;
 
   const gods = [
-    { x: -3.4, cfg: { skin: 0xdccfae, accent: 0x8a7a52, eye: 0xffcc55, eyeIntensity: 1.6, beard: true, weapon: "bolt", scale: 0.85 } },
-    { x: -1.6, cfg: { skin: 0xd3e2e2, accent: 0x6fb9c4, eye: 0x9fe8ff, eyeIntensity: 1.4, beard: true, weapon: "trident", scale: 0.85 } },
-    { x: 0,    cfg: { skin: 0xe8ddc8, accent: 0x7a6a48, eye: 0xff4d2e, eyeIntensity: 2, snakes: true, scale: 0.95 } },
-    { x: 1.6,  cfg: { skin: 0xd9cdad, accent: 0xc9a227, eye: 0xffe9a8, eyeIntensity: 1.4, helmet: true, weapon: "spear", scale: 0.85 } },
-    { x: 3.4,  cfg: { skin: 0xcbb3a8, accent: 0x6b2020, eye: 0xff2200, eyeIntensity: 1.8, beard: true, weapon: "sword", scale: 0.85 } },
+    { x: -4.6, real: true, cfg: { tint: 0xffe8c0, scale: 0.68 } },
+    { x: -2.3, real: true, cfg: { tint: 0xafe0e8, scale: 0.68 } },
+    { x: 0,    real: false, cfg: { skin: 0xe8ddc8, accent: 0x7a6a48, eye: 0xff4d2e, eyeIntensity: 2, snakes: true, scale: 0.95 } },
+    { x: 2.3,  real: true, cfg: { tint: 0xe8d8ff, scale: 0.68 } },
+    { x: 4.6,  real: true, cfg: { tint: 0xffb0a0, scale: 0.68 } },
   ];
 
   gods.forEach((g) => {
-    const bust = GodScene.buildBust(T, g.cfg);
+    const bust = g.real ? GodScene.buildRealWarrior(T, g.cfg) : GodScene.buildBust(T, g.cfg);
     bust.position.x = g.x;
     bust.position.z = g.x === 0 ? -1.2 : -0.4;
     stage.rig.add(bust);

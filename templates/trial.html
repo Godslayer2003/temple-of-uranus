@@ -15,6 +15,8 @@
     <p id="riddle-data" hidden>{{ riddle }}</p>
     <p id="intro-data" hidden>{{ intro }}</p>
     <p id="presenter-data" hidden>{{ presenter_key }}</p>
+    <p id="riddle-id-data" hidden>{{ riddle_id }}</p>
+    <p id="intro-index-data" hidden>{{ intro_index }}</p>
 
     <div class="dialogue-overlay">
         <div class="dialogue-box">
@@ -43,6 +45,7 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
     <script src="{{ url_for('static', filename='scene.js') }}"></script>
     <script src="{{ url_for('static', filename='dialogue.js') }}"></script>
     <script src="{{ url_for('static', filename='audio.js') }}"></script>

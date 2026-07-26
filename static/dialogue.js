@@ -1,64 +1,10 @@
-// Dialogue box with real browser text-to-speech (SpeechSynthesis) and a
-// mouth-flap animation on the 3D bust synced to actual speech, not a
-// pre-timed fake. Picks the best-quality voice the browser/OS actually
-// offers (voice engines vary wildly; this can't change the underlying
-// synthesis quality, only choose the best of what's available) and ducks
-// the background score while a god is speaking so the voice reads clearly.
+// Dialogue box driven by real pre-rendered voice audio (see
+// scripts/generate_voices.py — gTTS speech pitch-shifted per character),
+// not the browser's local SpeechSynthesis. Falls back to SpeechSynthesis
+// only if a voice file fails to load, so dialogue never goes silent.
+// Mouth-flap animation on the 3D bust is synced to actual audio playback.
 
 (function () {
-  let voicesPromise = null;
-  function loadVoices() {
-    if (voicesPromise) return voicesPromise;
-    voicesPromise = new Promise((resolve) => {
-      if (!("speechSynthesis" in window)) { resolve([]); return; }
-      const existing = window.speechSynthesis.getVoices();
-      if (existing.length) { resolve(existing); return; }
-      window.speechSynthesis.onvoiceschanged = () => resolve(window.speechSynthesis.getVoices());
-      setTimeout(() => resolve(window.speechSynthesis.getVoices()), 500);
-    });
-    return voicesPromise;
-  }
-
-  function pickVoice(voices, genderHint) {
-    if (!voices.length) return null;
-    const inEnglish = voices.filter((v) => v.lang && v.lang.toLowerCase().startsWith("en"));
-    const pool = inEnglish.length ? inEnglish : voices;
-    const scored = pool.map((v) => {
-      const n = v.name.toLowerCase();
-      let score = 0;
-      if (/natural|neural|online|premium|enhanced|wavenet/.test(n)) score += 4;
-      if (/google/.test(n)) score += 2;
-      if (/microsoft/.test(n)) score += 1;
-      if (v.localService === false) score += 1;
-      if (/compact|espeak|robot/.test(n)) score -= 4;
-      if (genderHint === "male" && /female|woman|zira|susan|samantha/.test(n)) score -= 2;
-      if (genderHint === "male" && /male|man|david|guy|daniel|mark/.test(n)) score += 1;
-      if (genderHint === "female" && /male|man\b|david|guy|daniel|mark/.test(n)) score -= 2;
-      if (genderHint === "female" && /female|woman|zira|susan|samantha/.test(n)) score += 1;
-      return { v, score };
-    });
-    scored.sort((a, b) => b.score - a.score);
-    return scored[0].v;
-  }
-
-  async function speak(text, opts) {
-    opts = opts || {};
-    if (!("speechSynthesis" in window)) return;
-    const voices = await loadVoices();
-    const voice = pickVoice(voices, opts.gender);
-    return new Promise((resolve) => {
-      const utter = new SpeechSynthesisUtterance(text);
-      if (voice) utter.voice = voice;
-      utter.pitch = opts.pitch != null ? opts.pitch : 0.6;
-      utter.rate = opts.rate != null ? opts.rate : 0.85;
-      utter.volume = 1;
-      utter.onend = resolve;
-      utter.onerror = resolve;
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(utter);
-    });
-  }
-
   function typewriter(el, text, ms) {
     return new Promise((resolve) => {
       el.textContent = "";
@@ -71,7 +17,7 @@
     });
   }
 
-  function animateMouth(bust) {
+  function animateMouth(bust, isSpeaking) {
     if (!bust || !bust.userData.mouth) return () => {};
     let raf;
     const mouth = bust.userData.mouth;
@@ -79,7 +25,7 @@
     const baseY = mouth.scale.y;
     const baseHeadX = head ? head.rotation.x : 0;
     function tick() {
-      const speaking = window.speechSynthesis && window.speechSynthesis.speaking;
+      const speaking = isSpeaking();
       mouth.scale.y = speaking ? baseY * (0.6 + Math.random() * 2.2) : baseY;
       if (head) {
         head.rotation.x = speaking ? baseHeadX + Math.sin(Date.now() * 0.006) * 0.03 : baseHeadX;
@@ -93,15 +39,65 @@
     };
   }
 
-  async function say(nameEl, textEl, bust, name, text, voiceOpts) {
+  function playFile(url) {
+    return new Promise((resolve) => {
+      const audio = new Audio(url);
+      let settled = false;
+      const finish = () => { if (!settled) { settled = true; resolve(null); } };
+      audio.addEventListener("loadedmetadata", () => {
+        if (!settled) resolve(audio);
+      });
+      audio.addEventListener("error", finish);
+      setTimeout(finish, 4000);
+    });
+  }
+
+  function speakBrowserFallback(text, opts) {
+    return new Promise((resolve) => {
+      if (!("speechSynthesis" in window)) { resolve(); return; }
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.pitch = (opts && opts.pitch) || 0.6;
+      utter.rate = (opts && opts.rate) || 0.85;
+      utter.onend = resolve;
+      utter.onerror = resolve;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utter);
+    });
+  }
+
+  // audioUrl: pre-rendered voice file for this exact line.
+  // fallbackVoiceOpts: browser TTS pitch/rate used only if the file 404s.
+  async function say(nameEl, textEl, bust, name, text, audioUrl, fallbackVoiceOpts) {
     nameEl.textContent = name;
-    const stopMouth = animateMouth(bust);
     if (window.templeAudio) templeAudio.duck();
-    const typing = typewriter(textEl, text, Math.max(14, 900 / text.length));
-    await Promise.all([speak(text, voiceOpts), typing]);
-    stopMouth();
+
+    const audio = audioUrl ? await playFile(audioUrl) : null;
+
+    if (audio) {
+      let playing = true;
+      const stopMouth = animateMouth(bust, () => playing);
+      const played = new Promise((resolve) => {
+        audio.addEventListener("ended", () => { playing = false; resolve(); });
+        audio.addEventListener("error", () => { playing = false; resolve(); });
+      });
+      const typing = typewriter(textEl, text, Math.max(14, (audio.duration * 1000) / text.length));
+      audio.play().catch(() => {});
+      await Promise.all([played, typing]);
+      stopMouth();
+    } else {
+      // voice file missing/failed to load — fall back to browser TTS
+      let speaking = true;
+      const stopMouth = animateMouth(bust, () => speaking);
+      const typing = typewriter(textEl, text, Math.max(14, 900 / text.length));
+      await Promise.all([
+        speakBrowserFallback(text, fallbackVoiceOpts).then(() => { speaking = false; }),
+        typing,
+      ]);
+      stopMouth();
+    }
+
     if (window.templeAudio) templeAudio.unduck();
   }
 
-  window.Dialogue = { speak, typewriter, say };
+  window.Dialogue = { say, typewriter };
 })();
