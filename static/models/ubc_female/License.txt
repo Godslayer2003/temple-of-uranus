@@ -1,0 +1,16 @@
+Source: https://quaternius.itch.io/universal-base-characters
+Pack: "Universal Base Characters" (Standard/free tier) by Quaternius
+Model used: Superhero_Female_FullBody (glTF), from the Godot/general-purpose
+export of the pack.
+
+License: CC0 1.0 Universal (public domain dedication), per the pack's own
+License_Standard.txt. No attribution required.
+
+Original body textures (2048px PNG) were resized to 1024px and
+re-compressed to JPEG with ffmpeg for web weight. The .gltf's image
+references were rewritten (Python, json edit) to point at the compressed
+files in this folder instead of the original hair/eye/body PNGs — no
+other change to the mesh/geometry data. Used in static/scene.js
+(buildRealBody) as the first genuinely female-bodied deity model —
+previously every figure, including Athena, used the same male warrior
+mesh.

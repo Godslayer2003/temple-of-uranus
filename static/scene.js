@@ -262,6 +262,82 @@
     return group;
   }
 
+  // Real CC0 "Universal Base Characters" (Quaternius, itch.io) — genuinely
+  // distinct sculpted male and female bodies (not a recolor of the
+  // Achilles warrior mesh), loaded via glTF. Tinted the same way as the
+  // warrior/skeleton: a shared map+normal+roughness set multiplied by a
+  // per-god color, so the god-color-coding used elsewhere on the site
+  // (auras, UI accents) still applies to these too.
+  const bodyModels = {};
+  const bodyTextures = {};
+  const bodyLoading = {};
+  const pendingBodies = [];
+
+  function loadBodyModel(THREE, gender) {
+    if (bodyLoading[gender]) return bodyLoading[gender];
+    const base = `/static/models/ubc_${gender}/`;
+    const file = gender === "male" ? "Superhero_Male_FullBody.gltf" : "Superhero_Female_FullBody.gltf";
+    bodyLoading[gender] = new Promise((resolve) => {
+      if (!THREE.GLTFLoader) { resolve(null); return; }
+      const texLoader = new THREE.TextureLoader();
+      const loadTex = (name) => new Promise((res) => texLoader.load(`${base}${gender}_${name}.jpg`, res, undefined, () => res(null)));
+      Promise.all([loadTex("color"), loadTex("normal"), loadTex("roughness")]).then(([map, normalMap, roughnessMap]) => {
+        bodyTextures[gender] = { map, normalMap, roughnessMap };
+        new THREE.GLTFLoader().load(`${base}${file}`, (gltf) => {
+          bodyModels[gender] = gltf.scene;
+          pendingBodies
+            .filter((p) => p.gender === gender)
+            .forEach((p) => fillBody(THREE, p.group, p.tint, gender));
+          for (let i = pendingBodies.length - 1; i >= 0; i--) {
+            if (pendingBodies[i].gender === gender) pendingBodies.splice(i, 1);
+          }
+          resolve(gltf.scene);
+        }, undefined, () => resolve(null));
+      });
+    });
+    return bodyLoading[gender];
+  }
+
+  function fillBody(THREE, group, tint, gender) {
+    const model = bodyModels[gender].clone(true);
+    const tex = bodyTextures[gender];
+    model.traverse((o) => {
+      if (o.isMesh) {
+        o.material = new THREE.MeshStandardMaterial({
+          map: tex.map, normalMap: tex.normalMap, roughnessMap: tex.roughnessMap,
+          color: tint, roughness: 0.85, metalness: 0.05,
+        });
+        o.castShadow = true;
+        o.receiveShadow = true;
+      }
+    });
+    const box = new THREE.Box3().setFromObject(model);
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const scale = 3.2 / (size.y || 1);
+    model.scale.setScalar(scale);
+    const box2 = new THREE.Box3().setFromObject(model);
+    const center2 = new THREE.Vector3();
+    box2.getCenter(center2);
+    model.position.set(-center2.x, -box2.min.y + 0.5, -center2.z);
+
+    const pedestal = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.5, 1.2), goldPedestalMaterial(THREE));
+    pedestal.position.y = 0.25;
+
+    group.add(model, pedestal);
+  }
+
+  function buildRealBody(THREE, cfg) {
+    cfg = Object.assign({ tint: 0xd9cdad, scale: 1, gender: "male" }, cfg);
+    const group = new THREE.Group();
+    group.userData.isRealModel = true;
+    group.scale.setScalar(cfg.scale);
+    loadBodyModel(THREE, cfg.gender);
+    if (bodyModels[cfg.gender]) fillBody(THREE, group, cfg.tint, cfg.gender);
+    else pendingBodies.push({ group, tint: cfg.tint, gender: cfg.gender });
+    return group;
+  }
+
   function weaponMesh(THREE, kind, mat, glowMat) {
     const g = new THREE.Group();
     if (kind === "bolt") {
@@ -671,5 +747,5 @@
     return { THREE, scene, camera, renderer, rig, container };
   }
 
-  window.GodScene = { init, buildBust, buildRealWarrior, buildRealSkeleton, hideLoading };
+  window.GodScene = { init, buildBust, buildRealWarrior, buildRealSkeleton, buildRealBody, hideLoading };
 })();

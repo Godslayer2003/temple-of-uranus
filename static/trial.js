@@ -17,14 +17,17 @@ document.addEventListener("DOMContentLoaded", function () {
   const PRESENTERS = {
     zeus: {
       tint: 0xffcc33,
+      model: "warrior",
       voice: { pitch: 0.55, rate: 0.82, gender: "male" },
     },
     poseidon: {
       tint: 0x2299cc,
+      model: "body", gender: "male",
       voice: { pitch: 0.4, rate: 0.76, gender: "male" },
     },
     athena: {
       tint: 0x8855dd,
+      model: "body", gender: "female",
       voice: { pitch: 1.05, rate: 0.94, gender: "female" },
     },
   };
@@ -32,7 +35,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const presenterKey = document.getElementById("presenter-data").textContent.trim();
   const presenter = PRESENTERS[presenterKey] || PRESENTERS.zeus;
 
-  const deity = GodScene.buildRealWarrior(stage.THREE, { tint: presenter.tint, scale: 1.15 });
+  const deity = presenter.model === "body"
+    ? GodScene.buildRealBody(stage.THREE, { tint: presenter.tint, scale: 1.15, gender: presenter.gender })
+    : GodScene.buildRealWarrior(stage.THREE, { tint: presenter.tint, scale: 1.15 });
   deity.position.set(0, -0.6, 0);
   stage.rig.add(deity);
 
