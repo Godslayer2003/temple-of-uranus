@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
     particleColor: 0xa98fff, particleCount: 220,
     cameraRest: [0, 3.2, 12.5], cameraStart: [0, 7, 20], lookAt: [0, 2.2, -0.6],
     skyPhoto: "https://images.unsplash.com/photo-1760262176353-b04199ea732c?fm=jpg&q=70&w=1920&auto=format&fit=crop",
+    wideEnsemble: true,
   });
   if (!stage) return;
   const T = stage.THREE;

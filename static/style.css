@@ -436,9 +436,11 @@ main {
     max-width: 600px;
     margin: var(--space-10) auto;
     padding: var(--space-8) var(--space-6);
-    background: rgba(8, 6, 16, 0.55);
+    /* Same fix as .dialogue-box: was 0.55, too transparent once the
+       statues behind it started casting real, dramatic shadows. */
+    background: rgba(8, 6, 16, 0.9);
     border-radius: 14px;
-    backdrop-filter: blur(3px);
+    backdrop-filter: blur(6px);
 }
 
 .description {
@@ -537,11 +539,15 @@ main {
 .dialogue-box {
     width: calc(100vw - 2.5rem);
     max-width: 560px;
-    background: rgba(10, 8, 18, 0.78);
+    /* Was 0.78 — with the dramatic-lighting pass's stronger, higher-res
+       shadows, the statue's cast shadow showed through as a distracting
+       dark smudge right behind the dialogue text. More opaque so the box
+       is legible no matter what shadow happens to fall behind it. */
+    background: rgba(9, 7, 16, 0.94);
     border: 1px solid var(--gold-dim);
     border-radius: 10px;
     padding: var(--space-5) var(--space-6);
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(6px);
 }
 
 .speaker-name {

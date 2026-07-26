@@ -604,6 +604,7 @@
       rim: 0x6a2fce, groundColor: 0x141420, particleColor: 0xffcf8a,
       particleCount: 260, columnColor: 0xbfb59a, skyPhoto: null,
       cameraRest: [0, 2.6, 8.5], cameraStart: [0, 6.5, 16], lookAt: [0, 2.2, 0],
+      wideEnsemble: false,
     }, opts);
 
     const scene = new THREE.Scene();
@@ -632,13 +633,25 @@
     }
     container.appendChild(renderer.domElement);
 
-    scene.add(new THREE.HemisphereLight(0x6a6a99, 0x0a0a12, LIGHTING.hemi));
+    // The home page spreads five figures across roughly 9 units of width;
+    // one dramatic point light tuned for a single close-up statue (the
+    // other three pages) left the far ones (Athena, Medusa) nearly
+    // unlit. wideEnsemble adds a second, dimmer fill on the opposite side
+    // and lifts ambient just enough that nobody goes to black, without
+    // touching the punchy single-light look on the close-up pages.
+    scene.add(new THREE.HemisphereLight(0x6a6a99, 0x0a0a12, opts.wideEnsemble ? LIGHTING.hemi * 2.3 : LIGHTING.hemi));
     const key = new THREE.PointLight(opts.torch, LIGHTING.key, 22);
     key.position.set(-3, 4, 4);
     key.castShadow = true;
     key.shadow.mapSize.set(LIGHTING.shadowSize, LIGHTING.shadowSize);
-    key.shadow.bias = -0.0015;
+    key.shadow.bias = -0.0009;
+    key.shadow.radius = 4;
     scene.add(key);
+    if (opts.wideEnsemble) {
+      const fill = new THREE.PointLight(opts.torch, LIGHTING.key * 0.5, 26);
+      fill.position.set(4.5, 3.5, 3);
+      scene.add(fill);
+    }
     const rim = new THREE.PointLight(opts.rim, LIGHTING.rim, 22);
     rim.position.set(4, 2.2, -3);
     scene.add(rim);
