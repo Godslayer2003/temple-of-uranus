@@ -21,10 +21,14 @@
 
     --space-1: 0.25rem;
     --space-2: 0.5rem;
-    --space-3: 1rem;
-    --space-4: 1.5rem;
-    --space-5: 2.5rem;
-    --space-6: 4rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+    --space-16: 4rem;
 }
 
 body {
@@ -269,8 +273,8 @@ body::before {
     z-index: 2;
     display: flex;
     justify-content: center;
-    margin: -2.5rem auto 0.5rem;
-    padding-top: 1rem;
+    margin: calc(-1 * var(--space-10)) auto var(--space-2);
+    padding-top: var(--space-4);
 }
 
 .medusa-aura {
@@ -394,7 +398,7 @@ body::before {
 .tagline {
     font-size: 1.3rem;
     font-style: italic;
-    margin-top: 0.5rem;
+    margin-top: var(--space-2);
     color: var(--marble);
 }
 
@@ -407,8 +411,8 @@ main {
     position: relative;
     z-index: 2;
     max-width: 600px;
-    margin: 2.5rem auto;
-    padding: 2rem 1.5rem;
+    margin: var(--space-10) auto;
+    padding: var(--space-8) var(--space-6);
     background: rgba(8, 6, 16, 0.55);
     border-radius: 14px;
     backdrop-filter: blur(3px);
@@ -417,7 +421,7 @@ main {
 .description {
     font-size: 1.1rem;
     line-height: 1.6;
-    margin-bottom: 2rem;
+    margin-bottom: var(--space-8);
 }
 
 .join-btn {
@@ -453,7 +457,7 @@ main {
 }
 
 .count {
-    margin-top: 1.5rem;
+    margin-top: var(--space-6);
     font-size: 0.9rem;
     color: #9a9ab0;
 }
@@ -490,8 +494,8 @@ main {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 0.75rem;
-    margin-top: 1.25rem;
+    gap: var(--space-3);
+    margin-top: var(--space-5);
 }
 .btn-row .audio-btn { margin: 0; }
 
@@ -503,8 +507,8 @@ main {
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
-    padding: 2rem 1.25rem 3rem;
-    gap: 1.25rem;
+    padding: var(--space-8) var(--space-5) var(--space-12);
+    gap: var(--space-5);
 }
 
 .dialogue-box {
@@ -513,7 +517,7 @@ main {
     background: rgba(10, 8, 18, 0.78);
     border: 1px solid var(--gold-dim);
     border-radius: 10px;
-    padding: 1.25rem 1.5rem;
+    padding: var(--space-5) var(--space-6);
     backdrop-filter: blur(4px);
 }
 
@@ -522,7 +526,7 @@ main {
     font-family: var(--font-display);
     font-weight: 700;
     letter-spacing: 1px;
-    margin-bottom: 0.4rem;
+    margin-bottom: var(--space-2);
     text-transform: uppercase;
     font-size: 0.85rem;
 }
@@ -531,14 +535,14 @@ main {
     min-height: 3.6em;
     font-size: 1.15rem;
     line-height: 1.5;
-    margin: 0 0 1rem;
+    margin: 0 0 var(--space-4);
 }
 
 .riddle-form {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 0.75rem;
+    gap: var(--space-3);
     width: calc(100vw - 2.5rem);
     max-width: 560px;
 }
@@ -567,7 +571,7 @@ main {
     font-family: var(--font-display);
     font-weight: 700;
     font-size: 2.6rem;
-    margin: 0 0 0.5rem;
+    margin: 0 0 var(--space-2);
     text-shadow: 0 2px 10px rgba(0,0,0,0.6);
 }
 body[data-destiny="olympus"] .destiny-title { color: #fff3c4; text-shadow: 0 0 30px rgba(255, 220, 130, 0.7); }
@@ -585,10 +589,11 @@ body[data-destiny="underworld"] .destiny-title { color: #ff8a6a; text-shadow: 0 
     border-radius: 999px;
     cursor: pointer;
     letter-spacing: 0.5px;
-    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
 }
 .audio-btn:hover {
     background: rgba(255, 217, 122, 0.1);
+    transform: translateY(-2px);
 }
 .audio-btn.playing {
     background: var(--gold);
@@ -604,23 +609,31 @@ body[data-destiny="underworld"] .destiny-title { color: #ff8a6a; text-shadow: 0 
 
 /* ---------- Mobile ---------- */
 @media (max-width: 600px) {
-    .banner-overlay h1 { font-size: 2.1rem; letter-spacing: 1px; }
+    /* Cinzel sets noticeably wider than the old Georgia fallback — at the
+       previous 2.1rem/1px-letter-spacing this clipped past the viewport
+       edge on narrow phones (no horizontal padding existed to buffer it). */
+    .banner-overlay { padding: 0 var(--space-5); }
+    .banner-overlay h1 { font-size: 1.7rem; letter-spacing: 0; }
     .tagline { font-size: 1rem; }
 
-    main { margin: 1.5rem auto; padding: 1.5rem 1.1rem; }
+    main { margin: var(--space-6) auto; padding: var(--space-6) 1.1rem; }
     .description { font-size: 1rem; }
 
-    .dialogue-box { padding: 1rem 1.1rem; }
+    .dialogue-box { padding: var(--space-4) 1.1rem; }
     .dialogue-text { font-size: 1rem; }
     .destiny-title { font-size: 1.9rem; }
 
-    .riddle-form { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+    .riddle-form { flex-direction: column; align-items: stretch; gap: var(--space-2); }
     .riddle-btn { padding: 0.6rem 1rem; font-size: 0.9rem; }
 
-    .btn-row { flex-direction: column; align-items: stretch; gap: 0.6rem; }
+    .btn-row { flex-direction: column; align-items: stretch; gap: var(--space-3); }
     .audio-btn { font-size: 0.85rem; padding: 0.5rem 1rem; }
 
     .join-btn, .trial-btn { padding: 0.75rem 1.6rem; font-size: 1rem; }
+}
+
+@media (max-width: 400px) {
+    .banner-overlay h1 { font-size: 1.45rem; }
 }
 
 /* ---------- Audio entry gate ----------
@@ -635,12 +648,12 @@ body[data-destiny="underworld"] .destiny-title { color: #ff8a6a; text-shadow: 0 
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: var(--space-3);
+    gap: var(--space-4);
     background: rgba(6, 5, 12, 0.88);
     backdrop-filter: blur(6px);
     cursor: pointer;
     text-align: center;
-    padding: var(--space-3);
+    padding: var(--space-4);
     transition: opacity 0.5s ease;
 }
 .temple-gate h2 {
@@ -676,8 +689,12 @@ body[data-destiny="underworld"] .destiny-title { color: #ff8a6a; text-shadow: 0 
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: opacity 0.2s ease, background 0.2s ease;
+    transition: opacity 0.2s ease, background 0.2s ease, transform 0.15s ease;
     opacity: 0.55;
 }
-.mute-toggle:hover { opacity: 1; background: rgba(8, 6, 16, 0.7); }
+.mute-toggle:hover { opacity: 1; background: rgba(8, 6, 16, 0.7); transform: translateY(-2px); }
+.mute-toggle:focus-visible, .temple-gate:focus-visible {
+    outline: 2px solid var(--gold-bright);
+    outline-offset: 2px;
+}
 .mute-toggle.muted { color: var(--red); border-color: rgba(122, 31, 31, 0.6); }

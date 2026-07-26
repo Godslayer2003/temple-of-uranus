@@ -43,15 +43,24 @@
   function buildGate() {
     const gate = document.createElement("div");
     gate.className = "temple-gate";
+    gate.setAttribute("role", "button");
+    gate.setAttribute("tabindex", "0");
+    gate.setAttribute("aria-label", "Enter the Temple — click or press Enter to begin, with sound");
     gate.innerHTML =
       '<h2>Enter the Temple</h2><p>Click anywhere to begin, with sound</p>';
     document.body.appendChild(gate);
-    gate.addEventListener("click", function onEnter() {
+    gate.focus();
+    function onEnter(e) {
+      if (e.type === "keydown" && e.key !== "Enter" && e.key !== " ") return;
+      if (e.type === "keydown") e.preventDefault();
       el.play().then(() => fadeTo(muted ? 0 : targetVolume, 600));
       gate.classList.add("leaving");
       gate.removeEventListener("click", onEnter);
+      gate.removeEventListener("keydown", onEnter);
       setTimeout(() => gate.remove(), 550);
-    });
+    }
+    gate.addEventListener("click", onEnter);
+    gate.addEventListener("keydown", onEnter);
     return gate;
   }
 

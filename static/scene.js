@@ -298,14 +298,34 @@
     return bodyLoading[gender];
   }
 
+  // The free tier of the source pack has no animation data, so the rig
+  // loads in its raw bind T-pose. Rotate the shoulder bones so the figure
+  // reads as a standing statue with arms down/slightly forward instead of
+  // arms straight out to the sides.
+  function poseArmsDown(THREE, model) {
+    const upperL = model.getObjectByName("upperarm_l");
+    const upperR = model.getObjectByName("upperarm_r");
+    if (upperL) upperL.rotateX(1.6);
+    if (upperR) upperR.rotateX(1.6);
+  }
+
   function fillBody(THREE, group, tint, gender) {
-    const model = bodyModels[gender].clone(true);
+    // SkinnedMesh needs SkeletonUtils.clone, not the default Object3D
+    // .clone(true) — a plain clone duplicates the bone hierarchy but
+    // leaves the mesh's skeleton bound to the ORIGINAL bones, so posing
+    // the clone's bones has no visible effect on the clone's mesh.
+    const model = THREE.SkeletonUtils ? THREE.SkeletonUtils.clone(bodyModels[gender]) : bodyModels[gender].clone(true);
+    poseArmsDown(THREE, model);
     const tex = bodyTextures[gender];
     model.traverse((o) => {
       if (o.isMesh) {
+        // isSkinnedMesh needs an explicit skinning:true material flag, or
+        // the shader silently ignores bone transforms and renders the raw
+        // bind pose no matter how the bones are posed.
         o.material = new THREE.MeshStandardMaterial({
           map: tex.map, normalMap: tex.normalMap, roughnessMap: tex.roughnessMap,
           color: tint, roughness: 0.85, metalness: 0.05,
+          skinning: !!o.isSkinnedMesh,
         });
         o.castShadow = true;
         o.receiveShadow = true;
@@ -499,7 +519,12 @@
       const col = new THREE.Group();
       const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.4, 5.5, 16), mat);
       shaft.position.y = 2.75;
-      const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.36, 0.3, 16), mat);
+      // Gilded capital — real ancient temples commonly gold-leafed the
+      // capital specifically, so this is authentic ornament, not just
+      // decoration, and reuses the same real gold PBR texture as the
+      // pedestals instead of the plain marble tint every other column
+      // surface uses.
+      const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.36, 0.3, 16), goldPedestalMaterial(THREE));
       cap.position.y = 5.6;
       const base = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.2, 16), mat);
       base.position.y = 0.1;
