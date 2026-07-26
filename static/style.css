@@ -337,13 +337,31 @@ body::before {
     z-index: 2;
     height: 45vh;
     min-height: 260px;
-    background: linear-gradient(90deg, rgba(9, 9, 20, 0.92) 0%, rgba(9, 9, 20, 0.55) 38%, rgba(9, 9, 20, 0.25) 100%),
-                linear-gradient(rgba(10, 10, 25, 0.15), rgba(10, 10, 25, 0.55)),
-                url('textures/uranus-webb.jpg')
-                right center/cover no-repeat;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* Sized taller than its container and shifted up so a translateY() from
+   scroll always has real image to reveal instead of clipping to empty
+   space. transform is the only thing that changes per scroll frame — the
+   compositor handles that without a layout/paint pass. */
+.banner-bg {
+    position: absolute;
+    inset: -20% 0;
+    z-index: 0;
+    background: url('textures/uranus-webb.jpg') right center/cover no-repeat;
+    will-change: transform;
+}
+
+.banner-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(90deg, rgba(9, 9, 20, 0.92) 0%, rgba(9, 9, 20, 0.55) 38%, rgba(9, 9, 20, 0.25) 100%),
+                linear-gradient(rgba(10, 10, 25, 0.15), rgba(10, 10, 25, 0.55));
 }
 
 .photo-credit {
@@ -381,8 +399,14 @@ body::before {
     position: absolute;
     inset: auto 0 0 0;
     height: 22%;
+    z-index: 1;
     background: linear-gradient(180deg, transparent, var(--bg));
     pointer-events: none;
+}
+
+.banner-overlay {
+    position: relative;
+    z-index: 2;
 }
 
 .banner-overlay h1 {
@@ -564,6 +588,7 @@ main {
     color: #9a9ab0;
     font-size: 0.85rem;
     text-decoration: none;
+    transition: color 0.2s ease;
 }
 .back-link:hover { color: var(--gold); }
 
@@ -698,3 +723,39 @@ body[data-destiny="underworld"] .destiny-title { color: #ff8a6a; text-shadow: 0 
     outline-offset: 2px;
 }
 .mute-toggle.muted { color: var(--red); border-color: rgba(122, 31, 31, 0.6); }
+
+/* ---------- Ambient dust motes ----------
+   Pure CSS keyframe animation on transform+opacity only — compositor-
+   driven, no per-frame JS, no canvas/WebGL. Sits above the 3D canvas
+   (z-index 0) so it reads as atmosphere in the scene, below dialogue
+   content (z-index 2+) so it never competes with text. */
+.dust-field {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+}
+.dust-mote {
+    position: absolute;
+    bottom: -5%;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--gold-bright);
+    opacity: 0;
+    filter: drop-shadow(0 0 2px var(--gold-bright));
+    animation-name: dustDrift;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+@keyframes dustDrift {
+    0%   { transform: translate(0, 0); opacity: 0; }
+    10%  { opacity: 0.5; }
+    90%  { opacity: 0.35; }
+    100% { transform: translate(20px, -110vh); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .dust-mote { animation: none; display: none; }
+    .banner-bg { transform: none !important; }
+}
