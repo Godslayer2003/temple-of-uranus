@@ -570,12 +570,18 @@
     return pts;
   }
 
-  function tryBuildComposer(THREE, renderer, scene, camera) {
+  // Chiaroscuro lighting: low ambient fill, a punchy single-source key
+  // light, and deep shadows so each figure reads as lit by one torch in a
+  // dark temple rather than evenly lit from everywhere. Chosen after an
+  // A/B comparison against a brighter "golden/divine glow" alternative.
+  const LIGHTING = { hemi: 0.16, key: 1.45, rim: 0.85, sun: 0.10, exposure: 0.64, bloom: 0.36, shadowSize: 2048 };
+
+  function tryBuildComposer(THREE, renderer, scene, camera, bloomStrength) {
     if (!THREE.EffectComposer || !THREE.RenderPass || !THREE.UnrealBloomPass) return null;
     try {
       const composer = new THREE.EffectComposer(renderer);
       composer.addPass(new THREE.RenderPass(scene, camera));
-      const bloom = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.42, 0.4, 0.86);
+      const bloom = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), bloomStrength, 0.4, 0.86);
       composer.addPass(bloom);
       return composer;
     } catch (e) {
@@ -618,22 +624,25 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.shadowMap.enabled = true;
+    if (THREE.PCFSoftShadowMap) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.outputEncoding = THREE.sRGBEncoding || renderer.outputEncoding;
     if (THREE.ACESFilmicToneMapping) {
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 0.78;
+      renderer.toneMappingExposure = LIGHTING.exposure;
     }
     container.appendChild(renderer.domElement);
 
-    scene.add(new THREE.HemisphereLight(0x6a6a99, 0x0a0a12, 0.55));
-    const key = new THREE.PointLight(opts.torch, 1.0, 22);
+    scene.add(new THREE.HemisphereLight(0x6a6a99, 0x0a0a12, LIGHTING.hemi));
+    const key = new THREE.PointLight(opts.torch, LIGHTING.key, 22);
     key.position.set(-3, 4, 4);
     key.castShadow = true;
+    key.shadow.mapSize.set(LIGHTING.shadowSize, LIGHTING.shadowSize);
+    key.shadow.bias = -0.0015;
     scene.add(key);
-    const rim = new THREE.PointLight(opts.rim, 0.7, 22);
+    const rim = new THREE.PointLight(opts.rim, LIGHTING.rim, 22);
     rim.position.set(4, 2.2, -3);
     scene.add(rim);
-    const sun = new THREE.DirectionalLight(0xffffff, 0.3);
+    const sun = new THREE.DirectionalLight(0xffffff, LIGHTING.sun);
     sun.position.set(2, 8, 5);
     scene.add(sun);
 
@@ -683,7 +692,7 @@
     const rig = new THREE.Group();
     scene.add(rig);
 
-    const composer = tryBuildComposer(THREE, renderer, scene, camera);
+    const composer = tryBuildComposer(THREE, renderer, scene, camera, LIGHTING.bloom);
 
     function onResize() {
       const w = container.clientWidth, h = container.clientHeight;
