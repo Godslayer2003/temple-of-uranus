@@ -5,13 +5,19 @@
 //   olympus    : "A Legend Will Rise" — CodeManu, CC0, OpenGameArt.org
 //   underworld : Holst, "Mars, the Bringer of War" (1914 rec., Skidmore
 //                College Orchestra) — public domain, Musopen/Wikimedia
-// Plays automatically at ambient volume (~25-30%): attempts autoplay
-// immediately, and only if the browser's autoplay policy blocks that does
-// a full-screen "Enter the Temple" click gate appear — a real, visible
-// click target instead of silently waiting for the next click anywhere.
-// A small corner mute toggle is present (not prominent) so removing sound
-// entirely is still possible without ever stopping the music by default.
-// duck()/unduck() let spoken dialogue read clearly over the music.
+// Plus two quiet secondary layers mixed underneath the main track (see
+// static/audio/License.txt for full sourcing):
+//   wind  — "Space Winds" by aquinn, OpenGameArt.org, CC0 — every page
+//   choir — "Timeless Choir - Ambient" by migfus20, OpenGameArt.org,
+//           CC BY 4.0 (credited on-page) — Olympus only
+// Plays automatically at ambient volume (~25-30% main, ~7-10% layers):
+// attempts autoplay immediately, and only if the browser's autoplay
+// policy blocks that does a full-screen "Enter the Temple" click gate
+// appear — a real, visible click target instead of silently waiting for
+// the next click anywhere. A small corner mute toggle is present (not
+// prominent) so removing sound entirely is still possible without ever
+// stopping the music by default. duck()/unduck() let spoken dialogue read
+// clearly over the whole mix, main track and ambient layers alike.
 
 (function () {
   const TRACKS = {
@@ -21,23 +27,48 @@
     underworld: { src: "/static/audio/underworld.mp3", volume: 0.3 },
   };
 
+  const AMBIENT_TRACKS = {
+    wind: { src: "/static/audio/ambient-wind.mp3", volume: 0.1 },
+    choir: { src: "/static/audio/ambient-choir.mp3", volume: 0.07 },
+  };
+  const AMBIENT_LAYERS = {
+    home: ["wind"],
+    trial: ["wind"],
+    olympus: ["wind", "choir"],
+    underworld: ["wind"],
+  };
+
   let el = null;
   let targetVolume = 0.28;
-  let fadeTimer = null;
+  let layers = []; // [{ el, targetVolume }]
   let muted = false;
 
-  function fadeTo(vol, ms) {
-    if (!el) return;
-    clearInterval(fadeTimer);
+  function fadeElTo(target, vol, ms) {
+    clearInterval(target._fadeTimer);
     const steps = 20;
-    const start = el.volume;
+    const start = target.volume;
     const delta = (vol - start) / steps;
     let i = 0;
-    fadeTimer = setInterval(() => {
+    target._fadeTimer = setInterval(() => {
       i++;
-      el.volume = Math.min(1, Math.max(0, start + delta * i));
-      if (i >= steps) clearInterval(fadeTimer);
+      target.volume = Math.min(1, Math.max(0, start + delta * i));
+      if (i >= steps) clearInterval(target._fadeTimer);
     }, ms / steps);
+  }
+
+  function fadeTo(vol, ms) {
+    if (el) fadeElTo(el, vol, ms);
+  }
+
+  function fadeLayersTo(factor, ms) {
+    layers.forEach((layer) => fadeElTo(layer.el, layer.targetVolume * factor, ms));
+  }
+
+  function playAll(ms) {
+    el.play().then(() => fadeTo(muted ? 0 : targetVolume, ms));
+    layers.forEach((layer) => {
+      layer.el.play().then(() => fadeElTo(layer.el, muted ? 0 : layer.targetVolume, ms)).catch(() => {});
+    });
   }
 
   function buildGate() {
@@ -53,7 +84,7 @@
     function onEnter(e) {
       if (e.type === "keydown" && e.key !== "Enter" && e.key !== " ") return;
       if (e.type === "keydown") e.preventDefault();
-      el.play().then(() => fadeTo(muted ? 0 : targetVolume, 600));
+      playAll(600);
       gate.classList.add("leaving");
       gate.removeEventListener("click", onEnter);
       gate.removeEventListener("keydown", onEnter);
@@ -77,6 +108,7 @@
       btn.textContent = muted ? "\u{1F507}" : "\u{1F50A}"; // muted-speaker : speaker
       btn.setAttribute("aria-label", muted ? "Unmute background music" : "Mute background music");
       fadeTo(muted ? 0 : targetVolume, 300);
+      fadeLayersTo(muted ? 0 : 1, 300);
     });
     document.body.appendChild(btn);
   }
@@ -95,10 +127,25 @@
     el.src = cfg.src;
     el.volume = 0;
 
+    layers.forEach((layer) => layer.el.remove());
+    layers = (AMBIENT_LAYERS[mode] || []).map((key) => {
+      const layerCfg = AMBIENT_TRACKS[key];
+      const layerEl = document.createElement("audio");
+      layerEl.loop = true;
+      layerEl.preload = "auto";
+      layerEl.volume = 0;
+      layerEl.src = layerCfg.src;
+      document.body.appendChild(layerEl);
+      return { el: layerEl, targetVolume: layerCfg.volume };
+    });
+
     buildMuteToggle();
 
     el.play()
-      .then(() => fadeTo(targetVolume, 1800))
+      .then(() => {
+        fadeTo(targetVolume, 1800);
+        layers.forEach((layer) => layer.el.play().then(() => fadeElTo(layer.el, layer.targetVolume, 1800)).catch(() => {}));
+      })
       .catch(() => {
         // Autoplay blocked by the browser — a hard policy no site can
         // override. Show a real, visible click target instead of a
@@ -108,12 +155,14 @@
   }
 
   function duck() {
-    if (!el || muted) return;
+    if (muted) return;
     fadeTo(targetVolume * 0.22, 250);
+    fadeLayersTo(0.22, 250);
   }
   function unduck() {
-    if (!el || muted) return;
+    if (muted) return;
     fadeTo(targetVolume, 500);
+    fadeLayersTo(1, 500);
   }
 
   window.templeAudio = { init, duck, unduck };

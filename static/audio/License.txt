@@ -15,3 +15,21 @@ underworld.mp3 — real orchestral recording, not a game-music loop:
   Note: this is a historical (1914) recording, so it has the frequency
   range and surface noise of acoustic-era recording equipment rather than
   modern studio fidelity. Real orchestra, real recording, antique sound.
+
+ambient-wind.mp3 — quiet secondary layer mixed under the main track on
+  every page (see AMBIENT_LAYERS in audio.js):
+  "Space Winds" by aquinn, OpenGameArt.org
+  Source: https://opengameart.org/content/space-winds
+  License: CC0. No attribution required.
+  Re-encoded from the original 778KB MP3 to 96kbps for file size.
+
+ambient-choir.mp3 — quiet secondary layer mixed under Olympus's main
+  track only:
+  "Timeless Choir - Ambient" by migfus20, OpenGameArt.org
+  Source: https://opengameart.org/content/timeless-choir-ambient
+  License: CC-BY 4.0 — attribution required.
+  Credit (displayed on-page via .music-credit in templates/olympus.html —
+  do not remove that element if this track stays in use):
+    Ambient choir — migfus20 (OpenGameArt.org), CC BY 4.0
+  Re-encoded from the original 320kbps/19MB MP3 to 96kbps for file size;
+  no other alteration.
