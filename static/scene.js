@@ -69,6 +69,54 @@
     });
   }
 
+  // Real PBR gold texture (ambientCG "Metal007", CC0) — color + normal +
+  // roughness maps, used unconditionally on every pedestal regardless of
+  // the figure's own tint, so every god/skeleton/Medusa stands on the same
+  // real gold-textured plinth rather than a flat color matching its own
+  // tint (which would otherwise multiply the texture into a muddy version
+  // of whatever color the statue is).
+  let goldMaps = null;
+  let goldLoading = null;
+  const pendingGoldMaterials = [];
+
+  function loadGoldTexture(THREE) {
+    if (goldLoading) return goldLoading;
+    const loader = new THREE.TextureLoader();
+    const load = (url) =>
+      new Promise((resolve) => {
+        loader.load(url, (tex) => {
+          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          tex.repeat.set(1.4, 1);
+          resolve(tex);
+        }, undefined, () => resolve(null));
+      });
+    goldLoading = Promise.all([
+      load("/static/textures/gold/color.jpg"),
+      load("/static/textures/gold/normal.jpg"),
+      load("/static/textures/gold/roughness.jpg"),
+    ]).then(([map, normalMap, roughnessMap]) => {
+      if (!map) return null;
+      goldMaps = { map, normalMap, roughnessMap };
+      pendingGoldMaterials.forEach((m) => {
+        m.map = goldMaps.map;
+        m.normalMap = goldMaps.normalMap;
+        m.roughnessMap = goldMaps.roughnessMap;
+        m.needsUpdate = true;
+      });
+      pendingGoldMaterials.length = 0;
+      return goldMaps;
+    });
+    return goldLoading;
+  }
+
+  function goldPedestalMaterial(THREE) {
+    const opts = { color: 0xd7c07a, roughness: 0.55, metalness: 0.7 };
+    if (goldMaps) Object.assign(opts, { map: goldMaps.map, normalMap: goldMaps.normalMap, roughnessMap: goldMaps.roughnessMap });
+    const mat = new THREE.MeshStandardMaterial(opts);
+    if (!goldMaps) pendingGoldMaterials.push(mat);
+    return mat;
+  }
+
   // Real sculpted Greek-warrior model (CC0, "Achilles Spartan Greek
   // Warrior" by gamekorp on OpenGameArt) — a genuine detailed 3D character,
   // not procedural primitives. One shared mesh, re-tinted per god the same
@@ -128,10 +176,7 @@
     box2.getCenter(center2);
     model.position.set(-center2.x, -box2.min.y + 0.5, -center2.z);
 
-    const pedestal = new THREE.Mesh(
-      new THREE.BoxGeometry(1.7, 0.5, 1.2),
-      new THREE.MeshStandardMaterial({ color: tint, roughness: 0.7 })
-    );
+    const pedestal = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.5, 1.2), goldPedestalMaterial(THREE));
     pedestal.position.y = 0.25;
 
     group.add(model, pedestal);
@@ -200,10 +245,7 @@
     box2.getCenter(center2);
     model.position.set(-center2.x, -box2.min.y + 0.5, -center2.z);
 
-    const pedestal = new THREE.Mesh(
-      new THREE.BoxGeometry(1.7, 0.5, 1.2),
-      new THREE.MeshStandardMaterial({ color: tint, roughness: 0.7 })
-    );
+    const pedestal = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.5, 1.2), goldPedestalMaterial(THREE));
     pedestal.position.y = 0.25;
 
     group.add(model, pedestal);
@@ -276,7 +318,7 @@
     const eyeMat = new THREE.MeshStandardMaterial({ color: cfg.eye, emissive: cfg.eye, emissiveIntensity: cfg.eyeIntensity, roughness: 0.3 });
     const glowMat = new THREE.MeshStandardMaterial({ color: cfg.accent, emissive: cfg.accent, emissiveIntensity: 0.9, roughness: 0.35, metalness: 0.4 });
 
-    const pedestal = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.5, 1.2), accentMat);
+    const pedestal = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.5, 1.2), goldPedestalMaterial(THREE));
     pedestal.position.y = 0.25;
     group.add(pedestal);
 
@@ -462,6 +504,7 @@
     scene.fog = new THREE.FogExp2(opts.fog, opts.fogDensity);
     loadRealMarble(THREE);
     loadWarriorModel(THREE);
+    loadGoldTexture(THREE);
     if (opts.skyPhoto) loadBackgroundPhoto(THREE, scene, opts.skyPhoto);
 
     const camera = new THREE.PerspectiveCamera(42, container.clientWidth / container.clientHeight, 0.1, 80);

@@ -1,0 +1,13 @@
+Source: https://ambientcg.com/view?id=Metal007
+Asset: "Metal007" PBR material by ambientCG (Lennart Demes)
+License: CC0 1.0 Universal (public domain dedication)
+Full license: https://creativecommons.org/publicdomain/zero/1.0/
+No attribution required.
+
+Downloaded maps: Color, NormalGL, Roughness (Metalness/Displacement not
+used). Resized from the original 1K JPGs to 512x512 and re-compressed
+with ffmpeg for web weight (~40KB total for all three maps combined).
+
+Used in static/scene.js as a real PBR gold texture (color + normal +
+roughness maps) applied to pedestals and gold-toned trim, in place of a
+flat MeshStandardMaterial color with no surface detail.

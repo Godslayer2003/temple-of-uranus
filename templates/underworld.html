@@ -6,9 +6,13 @@
     <title>The Underworld Claims You</title>
     <meta name="description" content="Your wisdom failed you. The Underworld awaits.">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body data-destiny="underworld">
+    <div class="key-border fixed-top"></div>
     <div id="destiny-scene" class="scene-canvas"></div>
     <div class="scene-loading" id="scene-loading">Awakening the realm&hellip;</div>
     <p id="message-index-data" hidden>{{ message_index }}</p>

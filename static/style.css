@@ -1,20 +1,38 @@
 * { box-sizing: border-box; }
 
 :root {
-    --gold: #ffd97a;
-    --gold-dim: #d9b968;
+    /* Design-system palette: --gold is the muted metallic accent used for
+       most text/borders; --gold-bright is kept for glow/emphasis effects
+       (title text-shadow, eye emissive) where the muted accent reads as
+       too flat against near-black. */
+    --gold: #d4af37;
+    --gold-bright: #ffd97a;
+    --gold-dim: #a8862b;
+    --red: #7a1f1f;
+    --marble: #f2ece0;
     --aura-red: rgba(180, 20, 40, 0.55);
     --aura-purple: rgba(90, 20, 140, 0.5);
     --aura-cyan: rgba(20, 130, 160, 0.5);
     --aura-amber: rgba(200, 140, 20, 0.5);
     --bg: #0e0e1a;
+
+    --font-display: 'Cinzel', Georgia, serif;
+    --font-body: 'Cormorant Garamond', Georgia, serif;
+
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 1rem;
+    --space-4: 1.5rem;
+    --space-5: 2.5rem;
+    --space-6: 4rem;
 }
 
 body {
     margin: 0;
-    font-family: Georgia, 'Times New Roman', serif;
+    font-family: var(--font-body);
+    font-size: 1.15rem;
     background: var(--bg);
-    color: #f0e6d2;
+    color: var(--marble);
     text-align: center;
     position: relative;
     overflow-x: hidden;
@@ -50,6 +68,14 @@ body::before {
     opacity: 0.9;
 }
 .key-border.flip { transform: scaleY(-1); }
+.key-border.fixed-top {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 16px;
+    background-color: rgba(8, 6, 16, 0.5);
+}
 
 /* ---------- Pantheon background (Olympian statues) ---------- */
 /* Starts below the banner so it never sits under the opaque hero image. */
@@ -356,18 +382,20 @@ body::before {
 }
 
 .banner-overlay h1 {
+    font-family: var(--font-display);
     font-size: 3rem;
+    font-weight: 700;
     margin: 0;
     letter-spacing: 2px;
-    color: #ffd97a;
+    color: var(--gold-bright);
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 24px rgba(255, 217, 122, 0.35);
 }
 
 .tagline {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-style: italic;
     margin-top: 0.5rem;
-    color: #f0e6d2;
+    color: var(--marble);
 }
 
 @media (min-width: 721px) {
@@ -397,8 +425,9 @@ main {
     color: #1a1a2e;
     border: none;
     padding: 0.9rem 2.2rem;
-    font-size: 1.1rem;
-    font-weight: bold;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 700;
     border-radius: 999px;
     cursor: pointer;
     letter-spacing: 1px;
@@ -406,14 +435,14 @@ main {
 }
 
 .join-btn:hover {
-    background: #ffe8a8;
+    background: var(--gold-bright);
     transform: translateY(-2px);
 }
 
 .trial-btn {
     display: inline-block;
     text-decoration: none;
-    background: linear-gradient(135deg, #ffd97a, #c9433f);
+    background: linear-gradient(135deg, var(--gold-bright), var(--red));
     margin-top: 0.5rem;
 }
 .trial-btn:hover { transform: translateY(-2px); filter: brightness(1.08); }
@@ -490,11 +519,12 @@ main {
 
 .speaker-name {
     color: var(--gold);
-    font-weight: bold;
+    font-family: var(--font-display);
+    font-weight: 700;
     letter-spacing: 1px;
     margin-bottom: 0.4rem;
     text-transform: uppercase;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
 }
 
 .dialogue-text {
@@ -534,6 +564,8 @@ main {
 .back-link:hover { color: var(--gold); }
 
 .destiny-title {
+    font-family: var(--font-display);
+    font-weight: 700;
     font-size: 2.6rem;
     margin: 0 0 0.5rem;
     text-shadow: 0 2px 10px rgba(0,0,0,0.6);
@@ -590,3 +622,62 @@ body[data-destiny="underworld"] .destiny-title { color: #ff8a6a; text-shadow: 0 
 
     .join-btn, .trial-btn { padding: 0.75rem 1.6rem; font-size: 1rem; }
 }
+
+/* ---------- Audio entry gate ----------
+   Only rendered when autoplay is actually blocked by the browser (see
+   audio.js) — a real click target instead of silently waiting for the
+   next click anywhere on the page. */
+.temple-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    background: rgba(6, 5, 12, 0.88);
+    backdrop-filter: blur(6px);
+    cursor: pointer;
+    text-align: center;
+    padding: var(--space-3);
+    transition: opacity 0.5s ease;
+}
+.temple-gate h2 {
+    font-family: var(--font-display);
+    color: var(--gold-bright);
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    margin: 0;
+    text-shadow: 0 0 24px rgba(255, 217, 122, 0.35);
+}
+.temple-gate p {
+    color: var(--marble);
+    font-size: 1.05rem;
+    opacity: 0.75;
+    margin: 0;
+}
+.temple-gate.leaving { opacity: 0; pointer-events: none; }
+
+.mute-toggle {
+    position: fixed;
+    top: var(--space-2);
+    right: var(--space-2);
+    z-index: 3;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    background: rgba(8, 6, 16, 0.4);
+    color: rgba(240, 230, 210, 0.6);
+    font-size: 0.95rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s ease, background 0.2s ease;
+    opacity: 0.55;
+}
+.mute-toggle:hover { opacity: 1; background: rgba(8, 6, 16, 0.7); }
+.mute-toggle.muted { color: var(--red); border-color: rgba(122, 31, 31, 0.6); }
