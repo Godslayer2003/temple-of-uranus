@@ -307,13 +307,27 @@ body::before {
     z-index: 2;
     height: 45vh;
     min-height: 260px;
-    background: linear-gradient(rgba(10, 10, 25, 0.55), rgba(10, 10, 25, 0.75)),
-                url('https://images.unsplash.com/photo-1555993539-1732b0258235?auto=format&fit=crop&w=1600&q=80')
-                center/cover no-repeat;
+    background: linear-gradient(90deg, rgba(9, 9, 20, 0.92) 0%, rgba(9, 9, 20, 0.55) 38%, rgba(9, 9, 20, 0.25) 100%),
+                linear-gradient(rgba(10, 10, 25, 0.15), rgba(10, 10, 25, 0.55)),
+                url('textures/uranus-webb.jpg')
+                right center/cover no-repeat;
     display: flex;
     align-items: center;
     justify-content: center;
 }
+
+.photo-credit {
+    position: absolute;
+    right: 0.75rem;
+    bottom: 0.5rem;
+    z-index: 3;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.5px;
+    color: rgba(240, 230, 210, 0.55);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+.photo-credit a { color: inherit; }
 
 /* smooth the hard cut from photo to solid background */
 .banner::after {
@@ -338,6 +352,11 @@ body::before {
     font-style: italic;
     margin-top: 0.5rem;
     color: #f0e6d2;
+}
+
+@media (min-width: 721px) {
+    .banner { justify-content: flex-start; }
+    .banner-overlay { text-align: left; padding-left: 7%; max-width: 46%; }
 }
 
 main {

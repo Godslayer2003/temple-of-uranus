@@ -1,0 +1,14 @@
+Source: https://esawebb.org/images/weic2332a/
+Title: Uranus close-up view (NIRCam)
+Credit (required, must be reproduced in full and unaltered wherever the image is used):
+  NASA, ESA, CSA, STScI
+
+License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+Full license: https://creativecommons.org/licenses/by/4.0/
+
+Real photograph: James Webb Space Telescope NIRCam infrared image of Uranus
+and 11 of its 13 known rings, released 2023-04-06. Used as the home page
+hero background in static/style.css (.banner). The credit line above is
+displayed on-page via .photo-credit in templates/index.html — do not remove
+that element if this image stays in use, per the license's "credit must
+remain visibly connected to the image" requirement.
