@@ -1,0 +1,7 @@
+*.obj -text
+*.mtl -text
+*.mp3 binary
+*.wav binary
+*.jpg binary
+*.png binary
+*.glb binary

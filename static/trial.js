@@ -8,22 +8,23 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   const stage = GodScene.init("trial-scene", {
-    fog: 0x140b1f, fogDensity: 0.06, bg: 0x0b0713, rim: 0x6a2fce, torch: 0xffb35c,
+    fog: 0x140b1f, fogDensity: 0.04, bg: 0x0b0713, rim: 0x6a2fce, torch: 0xffb35c,
     particleColor: 0xffcf8a, particleCount: 300,
+    skyPhoto: "https://images.unsplash.com/photo-1760262176353-b04199ea732c?fm=jpg&q=70&w=1920&auto=format&fit=crop",
   });
   if (!stage) return;
 
   const PRESENTERS = {
     zeus: {
-      tint: 0xffe8c0,
+      tint: 0xffcc33,
       voice: { pitch: 0.55, rate: 0.82, gender: "male" },
     },
     poseidon: {
-      tint: 0xafe0e8,
+      tint: 0x2299cc,
       voice: { pitch: 0.4, rate: 0.76, gender: "male" },
     },
     athena: {
-      tint: 0xe8d8ff,
+      tint: 0x8855dd,
       voice: { pitch: 1.05, rate: 0.94, gender: "female" },
     },
   };

@@ -7,8 +7,13 @@ messages), so every line is pre-rendered once here rather than calling a
 TTS service on every visitor's page load.
 
 Pipeline: gTTS (a real internet text-to-speech service, Google's) renders
-the base speech, then ffmpeg pitch-shifts it per character so Zeus,
-Poseidon, Athena, and Hades don't all sound identical.
+the base speech using a different regional accent per character (real
+voice variation from the source, not post-processing) — Zeus/Poseidon/
+Athena/Hades each hit a different Google Translate TTS endpoint. Only a
+very small amount of ffmpeg pitch adjustment is layered on top; the first
+version of this script pitch-shifted aggressively (+18%/-25%) and it came
+out sounding like chipmunks — formant-dragging pitch shift is only
+convincing in small doses.
 
 Requires: pip install gTTS, and ffmpeg on PATH (or set FFMPEG_PATH below).
 """
@@ -32,22 +37,32 @@ TMP_DIR = os.path.join(os.environ.get("TEMP", "."), "voice_gen_tmp")
 os.makedirs(OUT_DIR, exist_ok=True)
 os.makedirs(TMP_DIR, exist_ok=True)
 
-# (asetrate multiplier, extra ffmpeg audio filter chain suffix)
+# tld picks a different Google Translate TTS regional voice/accent per
+# character — real source variation. rate is now a *subtle* ffmpeg
+# pitch nudge only (never above ~6%), just enough to add a little weight
+# without crossing into artifact/chipmunk territory.
 VOICE_PROFILES = {
-    "zeus": {"rate": 0.88, "extra": ""},
-    "poseidon": {"rate": 0.80, "extra": ""},
-    "athena": {"rate": 1.18, "extra": ""},
-    "hades": {"rate": 0.75, "extra": ",aecho=0.6:0.5:60:0.25"},
+    "zeus":     {"tld": "co.uk",  "rate": 0.96, "extra": ""},
+    "poseidon": {"tld": "com.au", "rate": 0.94, "extra": ""},
+    "athena":   {"tld": "co.in",  "rate": 1.0,  "extra": ""},
+    "hades":    {"tld": "co.za",  "rate": 0.90, "extra": ",aecho=0.5:0.4:60:0.2"},
 }
 
 
-def gtts_base(text, tmp_path):
-    tts = gTTS(text=text, lang="en", tld="co.uk", slow=False)
+def gtts_base(text, tmp_path, tld):
+    tts = gTTS(text=text, lang="en", tld=tld, slow=False)
     tts.save(tmp_path)
 
 
 def pitch_shift(src_path, dst_path, profile):
     rate = profile["rate"]
+    if rate == 1.0 and not profile["extra"]:
+        # no processing requested — plain re-encode, zero risk of artifacts
+        subprocess.run(
+            [FFMPEG, "-y", "-i", src_path, "-codec:a", "libmp3lame", "-b:a", "96k", dst_path],
+            check=True, capture_output=True,
+        )
+        return
     tempo = round(1.0 / rate, 4)
     # atempo must be within [0.5, 2.0] per ffmpeg's filter limits — fine here.
     filt = f"asetrate=44100*{rate},aresample=44100,atempo={tempo}{profile['extra']}"
@@ -59,13 +74,13 @@ def pitch_shift(src_path, dst_path, profile):
 
 def make(text, voice_key, out_name):
     out_path = os.path.join(OUT_DIR, out_name)
+    profile = VOICE_PROFILES[voice_key]
     if os.path.exists(out_path):
-        print("skip (exists):", out_name)
-        return
-    tmp_path = os.path.join(TMP_DIR, "base.mp3")
+        os.remove(out_path)  # always regenerate — profiles may have changed
+    tmp_path = os.path.join(TMP_DIR, f"base_{voice_key}.mp3")
     print("generating:", out_name, "<-", text[:60])
-    gtts_base(text, tmp_path)
-    pitch_shift(tmp_path, out_path, VOICE_PROFILES[voice_key])
+    gtts_base(text, tmp_path, profile["tld"])
+    pitch_shift(tmp_path, out_path, profile)
 
 
 def main():
