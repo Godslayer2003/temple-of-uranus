@@ -6,16 +6,14 @@ Not run at request time — the site's dialogue is a fixed, enumerable set
 messages), so every line is pre-rendered once here rather than calling a
 TTS service on every visitor's page load.
 
-Pipeline: gTTS (a real internet text-to-speech service, Google's) renders
-the base speech using a different regional accent per character (real
-voice variation from the source, not post-processing) — Zeus/Poseidon/
-Athena/Hades each hit a different Google Translate TTS endpoint. Only a
-very small amount of ffmpeg pitch adjustment is layered on top; the first
-version of this script pitch-shifted aggressively (+18%/-25%) and it came
-out sounding like chipmunks — formant-dragging pitch shift is only
-convincing in small doses.
+Pipeline: edge-tts (Microsoft's free neural TTS — the same engine behind
+Edge's "Read Aloud" and Windows Narrator, no API key required) with a
+different named voice per character, plus small pitch/rate adjustments
+applied natively by the synthesis engine itself (Hz-based, formant-aware)
+rather than post-processed with ffmpeg — the earlier gTTS + ffmpeg
+asetrate approach is what produced the chipmunk artifacts.
 
-Requires: pip install gTTS, and ffmpeg on PATH (or set FFMPEG_PATH below).
+Requires: pip install edge-tts
 """
 
 import os
@@ -25,62 +23,35 @@ import subprocess
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app import RIDDLES, PRESENTERS, OLYMPUS_MESSAGES, UNDERWORLD_MESSAGES  # noqa: E402
 
-from gtts import gTTS  # noqa: E402
-
-FFMPEG = os.environ.get(
-    "FFMPEG_PATH",
-    r"C:\Users\pc\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.1.2-full_build\bin\ffmpeg.exe",
-)
-
 OUT_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "static", "voices")
-TMP_DIR = os.path.join(os.environ.get("TEMP", "."), "voice_gen_tmp")
 os.makedirs(OUT_DIR, exist_ok=True)
-os.makedirs(TMP_DIR, exist_ok=True)
 
-# tld picks a different Google Translate TTS regional voice/accent per
-# character — real source variation. rate is now a *subtle* ffmpeg
-# pitch nudge only (never above ~6%), just enough to add a little weight
-# without crossing into artifact/chipmunk territory.
+# Each god gets a genuinely distinct named Microsoft neural voice (not one
+# voice pitch-shifted four ways), with only a small native pitch/rate
+# nudge for extra weight.
 VOICE_PROFILES = {
-    "zeus":     {"tld": "co.uk",  "rate": 0.96, "extra": ""},
-    "poseidon": {"tld": "com.au", "rate": 0.94, "extra": ""},
-    "athena":   {"tld": "co.in",  "rate": 1.0,  "extra": ""},
-    "hades":    {"tld": "co.za",  "rate": 0.90, "extra": ",aecho=0.5:0.4:60:0.2"},
+    "zeus":     {"voice": "en-US-ChristopherNeural", "pitch": "-20Hz", "rate": "-5%"},
+    "poseidon": {"voice": "en-GB-ThomasNeural",       "pitch": "-30Hz", "rate": "-8%"},
+    "athena":   {"voice": "en-US-AriaNeural",         "pitch": "+0Hz",  "rate": "+0%"},
+    "hades":    {"voice": "en-US-GuyNeural",          "pitch": "-40Hz", "rate": "-10%"},
 }
-
-
-def gtts_base(text, tmp_path, tld):
-    tts = gTTS(text=text, lang="en", tld=tld, slow=False)
-    tts.save(tmp_path)
-
-
-def pitch_shift(src_path, dst_path, profile):
-    rate = profile["rate"]
-    if rate == 1.0 and not profile["extra"]:
-        # no processing requested — plain re-encode, zero risk of artifacts
-        subprocess.run(
-            [FFMPEG, "-y", "-i", src_path, "-codec:a", "libmp3lame", "-b:a", "96k", dst_path],
-            check=True, capture_output=True,
-        )
-        return
-    tempo = round(1.0 / rate, 4)
-    # atempo must be within [0.5, 2.0] per ffmpeg's filter limits — fine here.
-    filt = f"asetrate=44100*{rate},aresample=44100,atempo={tempo}{profile['extra']}"
-    subprocess.run(
-        [FFMPEG, "-y", "-i", src_path, "-af", filt, "-codec:a", "libmp3lame", "-b:a", "96k", dst_path],
-        check=True, capture_output=True,
-    )
 
 
 def make(text, voice_key, out_name):
     out_path = os.path.join(OUT_DIR, out_name)
     profile = VOICE_PROFILES[voice_key]
-    if os.path.exists(out_path):
-        os.remove(out_path)  # always regenerate — profiles may have changed
-    tmp_path = os.path.join(TMP_DIR, f"base_{voice_key}.mp3")
     print("generating:", out_name, "<-", text[:60])
-    gtts_base(text, tmp_path, profile["tld"])
-    pitch_shift(tmp_path, out_path, profile)
+    subprocess.run(
+        [
+            "edge-tts",
+            "--voice", profile["voice"],
+            f"--pitch={profile['pitch']}",
+            f"--rate={profile['rate']}",
+            "--text", text,
+            "--write-media", out_path,
+        ],
+        check=True, capture_output=True,
+    )
 
 
 def main():
