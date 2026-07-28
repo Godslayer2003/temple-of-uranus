@@ -302,11 +302,18 @@
   // loads in its raw bind T-pose. Rotate the shoulder bones so the figure
   // reads as a standing statue with arms down/slightly forward instead of
   // arms straight out to the sides.
+  // Arms hanging straight down at the sides is anatomically normal (a
+  // relaxed standing person's arms are nearly straight), so a single
+  // rigid rotation looks right here — swinging the whole rig-less arm
+  // *up* toward the chest instead (an earlier attempt) exposed the lack
+  // of elbow articulation as an obviously stiff, robotic bend, and
+  // hand-authoring an elbow bend on an unrigged-for-animation mesh
+  // introduced its own mesh-gap artifact at the joint. Down avoids both.
   function poseArmsDown(THREE, model) {
     const upperL = model.getObjectByName("upperarm_l");
     const upperR = model.getObjectByName("upperarm_r");
-    if (upperL) upperL.rotateX(1.6);
-    if (upperR) upperR.rotateX(1.6);
+    if (upperL) upperL.rotateX(-1.55);
+    if (upperR) upperR.rotateX(-1.55);
   }
 
   function fillBody(THREE, group, tint, gender) {
