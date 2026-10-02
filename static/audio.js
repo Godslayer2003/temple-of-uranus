@@ -20,6 +20,7 @@
 // clearly over the whole mix, main track and ambient layers alike.
 
 (function () {
+  const qaMode = new URLSearchParams(window.location.search).has("qa");
   const TRACKS = {
     home: { src: "/static/audio/home.mp3", volume: 0.28 },
     trial: { src: "/static/audio/trial.mp3", volume: 0.25 },
@@ -114,6 +115,13 @@
   }
 
   function init(mode) {
+    // Automated visual checks cannot dismiss browser autoplay prompts.
+    // `?qa=1` keeps the page silent and unobstructed for screenshots.
+    if (qaMode) {
+      document.documentElement.dataset.qa = "true";
+      return;
+    }
+
     const cfg = TRACKS[mode] || TRACKS.home;
     targetVolume = cfg.volume;
 
