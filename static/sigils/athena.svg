@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <!-- Athena: an owl abstracted to two nested chevron "eye" marks over a
+       triangular body outline, replacing the old literal owl emoji.
+       Hardcoded to the gold leaf token; re-export if it changes. -->
+  <circle cx="12" cy="12" r="10.5" fill="none" stroke="#bd9548" stroke-width="1" opacity="0.6"/>
+  <g fill="none" stroke="#bd9548" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6.8,10.5 L9,8 L11.2,10.5"/>
+    <path d="M7.7,10.5 L9,9 L10.3,10.5"/>
+    <path d="M12.8,10.5 L15,8 L17.2,10.5"/>
+    <path d="M13.7,10.5 L15,9 L16.3,10.5"/>
+    <path d="M9,14 L12,19.5 L15,14"/>
+  </g>
+</svg>

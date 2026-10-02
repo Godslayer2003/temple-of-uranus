@@ -13,9 +13,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (window.GodScene) {
     const stage = GodScene.init("destiny-scene", isOlympus
-      ? { fog: 0xfbe9c6, fogDensity: 0.025, bg: 0xf3d99a, rim: 0xffe9b0, torch: 0xfff3d0, particleColor: 0xfff6d8, particleCount: 260, columnColor: 0xf3e6c4,
+      ? { fog: 0xfbe9c6, fogDensity: 0.025, bg: 0xf3d99a, rim: 0xffd98c, torch: 0xffe9b6, particleColor: 0xfff6d8, particleCount: 260, columnColor: 0xf3e6c4,
           skyPhoto: "https://images.unsplash.com/photo-1759190601110-5252f322b165?fm=jpg&q=70&w=1920&auto=format&fit=crop" }
-      : { fog: 0x1a0605, fogDensity: 0.055, bg: 0x0a0303, rim: 0xff2200, torch: 0xaa2200, particleColor: 0xff5522, particleCount: 340, columnColor: 0x2a1414,
+      : { fog: 0x1a0605, fogDensity: 0.055, bg: 0x0a0303, rim: 0xff3a1a, torch: 0x8a1f2a, particleColor: 0xff5522, particleCount: 340, columnColor: 0x2a1414,
           skyPhoto: "https://images.unsplash.com/photo-1631743598935-2d84f8615e4b?fm=jpg&q=70&w=1920&auto=format&fit=crop" }
     );
 

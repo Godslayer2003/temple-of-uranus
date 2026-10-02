@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <!-- Zeus: a lightning-bolt monogram as one continuous ink stroke inside
+       a small seal border — replaces the old filled comic-lightning .bolt
+       shape. Hardcoded to the gold leaf token; re-export if it changes. -->
+  <circle cx="12" cy="12" r="10.5" fill="none" stroke="#bd9548" stroke-width="1" opacity="0.6"/>
+  <path d="M12,4.5 L8.5,12.5 L12.5,12.5 L10,19.5" fill="none" stroke="#bd9548"
+        stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

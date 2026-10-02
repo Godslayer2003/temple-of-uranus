@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="32" viewBox="0 0 96 32">
+  <!-- Illuminated-grimoire border tile: hand-inked baseline, a sun glyph,
+       the astronomical Uranus glyph, and a pen-flick flourish between them.
+       Drawn as two overlapping stroke passes (wide/soft + thin/offset) to
+       fake ink-bleed and hand wobble, replacing the old rigid miter-joined
+       Greek key meander. Stroke color is hardcoded to match the gold leaf
+       token (#bd9548) — if that token's value changes, re-export this file too. -->
+  <g fill="none" stroke="#bd9548" stroke-linecap="round" stroke-linejoin="round">
+    <!-- wide/soft ink pass -->
+    <g stroke-width="3" opacity="0.55">
+      <path d="M3,23 Q24,19 48,22 T93,20"/>
+      <circle cx="16" cy="14" r="6"/>
+      <circle cx="16" cy="14" r="1.3" fill="#bd9548"/>
+      <path d="M29,17 C40,7 56,27 67,14"/>
+      <line x1="80" y1="6" x2="80" y2="19"/>
+      <line x1="74" y1="12" x2="86" y2="12"/>
+      <path d="M80,6 L76,2 M80,6 L84,2"/>
+      <circle cx="80" cy="24" r="3"/>
+      <circle cx="80" cy="24" r="0.9" fill="#bd9548"/>
+    </g>
+    <!-- thin/offset pass, slightly displaced for a hand-wobble read -->
+    <g stroke-width="1.4" opacity="0.85" transform="translate(0.5,0.4)">
+      <path d="M3,23 Q24,19 48,22 T93,20"/>
+      <circle cx="16" cy="14" r="6"/>
+      <path d="M29,17 C40,7 56,27 67,14"/>
+      <line x1="80" y1="6" x2="80" y2="19"/>
+      <line x1="74" y1="12" x2="86" y2="12"/>
+      <path d="M80,6 L76,2 M80,6 L84,2"/>
+      <circle cx="80" cy="24" r="3"/>
+    </g>
+  </g>
+</svg>

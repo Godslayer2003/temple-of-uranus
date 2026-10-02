@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
   const stage = GodScene.init("home-scene", {
-    fog: 0x0e0e1a, fogDensity: 0.03, bg: 0x0e0e1a, rim: 0x6a2fce, torch: 0xffb35c,
+    fog: 0x0e0e1a, fogDensity: 0.03, bg: 0x0e0e1a, rim: 0x5b3a92, torch: 0xff9c4a,
     particleColor: 0xa98fff, particleCount: 220,
     cameraRest: [0, 3.2, 12.5], cameraStart: [0, 7, 20], lookAt: [0, 2.2, -0.6],
     skyPhoto: "https://images.unsplash.com/photo-1760262176353-b04199ea732c?fm=jpg&q=70&w=1920&auto=format&fit=crop",

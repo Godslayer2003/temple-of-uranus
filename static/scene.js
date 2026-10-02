@@ -581,7 +581,11 @@
   // light, and deep shadows so each figure reads as lit by one torch in a
   // dark temple rather than evenly lit from everywhere. Chosen after an
   // A/B comparison against a brighter "golden/divine glow" alternative.
-  const LIGHTING = { hemi: 0.16, key: 1.45, rim: 0.85, sun: 0.10, exposure: 0.64, bloom: 0.36, shadowSize: 2048 };
+  // Illuminated-grimoire pass: key/rim rebalanced toward one dominant warm
+  // candle source (less of a second competing colored spotlight), exposure
+  // lifted slightly so the more desaturated gold-leaf palette doesn't read
+  // muddier than the old brass, bloom nudged up for a soft candle-glow halo.
+  const LIGHTING = { hemi: 0.15, key: 1.30, rim: 0.55, sun: 0.07, exposure: 0.70, bloom: 0.40, shadowSize: 2048 };
 
   function tryBuildComposer(THREE, renderer, scene, camera, bloomStrength) {
     if (!THREE.EffectComposer || !THREE.RenderPass || !THREE.UnrealBloomPass) return null;
@@ -662,7 +666,9 @@
     const rim = new THREE.PointLight(opts.rim, LIGHTING.rim, 22);
     rim.position.set(4, 2.2, -3);
     scene.add(rim);
-    const sun = new THREE.DirectionalLight(0xffffff, LIGHTING.sun);
+    // Faint cool moonlight tint (was pure white) — gives the warm candle
+    // key light something to contrast against besides intensity alone.
+    const sun = new THREE.DirectionalLight(0xaab8ff, LIGHTING.sun);
     sun.position.set(2, 8, 5);
     scene.add(sun);
 
@@ -740,7 +746,9 @@
       camera.position.lerpVectors(startPos, restPos, eased);
       camera.lookAt(lookAtPos);
 
-      key.intensity = 0.95 + Math.sin(t * 9) * 0.1 + Math.sin(t * 3.3) * 0.08;
+      // Tighter, faster-guttering flicker than the old torch sway — reads
+      // as a held candle rather than a mounted torch.
+      key.intensity = 0.92 + Math.sin(t * 9) * 0.06 + Math.sin(t * 3.3) * 0.05 + Math.sin(t * 17) * 0.03;
       rig.rotation.y += (mouseX * 0.35 - rig.rotation.y) * 0.02;
 
       const p = particles.geometry.attributes.position.array;

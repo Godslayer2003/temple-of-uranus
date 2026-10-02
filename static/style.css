@@ -1,22 +1,33 @@
 * { box-sizing: border-box; }
 
 :root {
-    /* Design-system palette: --gold is the muted metallic accent used for
-       most text/borders; --gold-bright is kept for glow/emphasis effects
+    /* Illuminated Grimoire palette: warm ink instead of the old cool
+       blue-black, so gold and wax-red read as candlelit rather than
+       stage-lit. --gold-leaf is the muted metallic accent used for most
+       text/borders; --gold-leaf-bright is kept for glow/emphasis effects
        (title text-shadow, eye emissive) where the muted accent reads as
        too flat against near-black. */
-    --gold: #d4af37;
-    --gold-bright: #ffd97a;
-    --gold-dim: #a8862b;
-    --red: #7a1f1f;
-    --marble: #f2ece0;
-    --aura-red: rgba(180, 20, 40, 0.55);
-    --aura-purple: rgba(90, 20, 140, 0.5);
-    --aura-cyan: rgba(20, 130, 160, 0.5);
-    --aura-amber: rgba(200, 140, 20, 0.5);
-    --bg: #0e0e1a;
+    --gold-leaf: #bd9548;
+    --gold-leaf-bright: #e8c877;
+    --gold-leaf-dim: #8a6f38;
+    --wax-seal: #8a1f2a;
+    --wax-seal-bright: #b23244;
+    --verdigris: #4f8f7a;
+    --verdigris-glow: rgba(79, 143, 122, 0.5);
+    --parchment: #efe3c8;
+    --parchment-muted: #b8ac8e;
+    --ink: #14100b;
+    /* Translucent card/veil variants — alphas preserved exactly from the
+       old --bg-derived values (see main/.dialogue-box/.temple-gate rules
+       below); only hue changes, since those alphas fix a real legibility
+       regression from the dramatic-lighting pass. */
+    --ink-card: rgba(20, 14, 8, 0.9);
+    --ink-card-strong: rgba(20, 14, 8, 0.94);
+    --ink-veil: rgba(10, 7, 4, 0.5);
+    --ink-veil-strong: rgba(10, 7, 4, 0.88);
 
     --font-display: 'Cinzel', Georgia, serif;
+    --font-illuminated: 'Uncial Antiqua', Georgia, serif;
     --font-body: 'Cormorant Garamond', Georgia, serif;
 
     --space-1: 0.25rem;
@@ -35,8 +46,8 @@ body {
     margin: 0;
     font-family: var(--font-body);
     font-size: 1.15rem;
-    background: var(--bg);
-    color: var(--marble);
+    background: var(--ink);
+    color: var(--parchment);
     text-align: center;
     position: relative;
     overflow-x: hidden;
@@ -50,8 +61,8 @@ body::before {
     z-index: 0;
     pointer-events: none;
     background:
-        radial-gradient(ellipse at 20% 30%, rgba(120, 20, 40, 0.18), transparent 55%),
-        radial-gradient(ellipse at 80% 70%, rgba(60, 10, 90, 0.18), transparent 55%);
+        radial-gradient(ellipse at 20% 30%, rgba(138, 31, 42, 0.16), transparent 55%),
+        radial-gradient(ellipse at 80% 70%, rgba(79, 143, 122, 0.13), transparent 55%);
     animation: fogDrift 18s ease-in-out infinite alternate;
 }
 
@@ -60,14 +71,14 @@ body::before {
     100% { transform: translate(-2%, 3%) scale(1.08); opacity: 1; }
 }
 
-/* ---------- Greek key borders ---------- */
+/* ---------- Manuscript borders ---------- */
 .key-border {
     position: relative;
     z-index: 3;
     height: 24px;
-    background-image: url('greek-key.svg');
+    background-image: url('manuscript-border.svg');
     background-repeat: repeat-x;
-    background-size: 36px 24px;
+    background-size: 54px 18px;
     background-position: center;
     opacity: 0.9;
 }
@@ -78,257 +89,7 @@ body::before {
     left: 0;
     right: 0;
     height: 16px;
-    background-color: rgba(8, 6, 16, 0.5);
-}
-
-/* ---------- Pantheon background (Olympian statues) ---------- */
-/* Starts below the banner so it never sits under the opaque hero image. */
-.pantheon {
-    position: fixed;
-    top: 45vh;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    min-height: 55vh;
-    z-index: 1;
-    overflow: hidden;
-    pointer-events: none;
-}
-
-.statue {
-    position: absolute;
-    width: 12vw;
-    min-width: 110px;
-    max-width: 180px;
-    opacity: 0.8;
-    animation: statueFloat 9s ease-in-out infinite;
-}
-
-.bust-wrap { position: relative; z-index: 1; }
-.bust-svg { width: 100%; height: auto; display: block; overflow: visible; }
-
-.bust-svg .robe,
-.bust-svg .neck,
-.bust-svg .head { filter: drop-shadow(0 6px 10px rgba(0,0,0,0.45)); }
-
-.bust-svg .pedestal-trim { fill: var(--gold-dim); opacity: 0.8; }
-.bust-svg .fold { stroke: rgba(0, 0, 0, 0.22); stroke-width: 2.5; }
-
-.bust-svg .hairgroup .hair,
-.bust-svg .hairgroup .beard,
-.bust-svg .hairgroup .helmet {
-    fill: #a8996f;
-    filter: drop-shadow(0 3px 5px rgba(0,0,0,0.4));
-}
-.bust-svg .hairgroup .crest { fill: var(--gold-dim); }
-.bust-svg .hairgroup .strand {
-    fill: none;
-    stroke: #6d5d3c;
-    stroke-width: 1.4;
-    stroke-linecap: round;
-    opacity: 0.85;
-}
-
-.bust-svg .carve .line {
-    fill: none;
-    stroke: rgba(40, 30, 15, 0.45);
-    stroke-width: 2.2;
-    stroke-linecap: round;
-}
-.bust-svg .carve .nose { fill: rgba(40, 30, 15, 0.14); stroke: rgba(40,30,15,0.35); stroke-width: 1.3; }
-.bust-svg .carve .cheek { stroke-width: 1.3; opacity: 0.4; }
-.bust-svg .carve .socket { fill: rgba(20, 14, 6, 0.4); }
-.bust-svg .carve .eye { fill: rgba(15, 10, 5, 0.65); }
-
-.aura {
-    position: absolute;
-    inset: -55%;
-    border-radius: 50%;
-    filter: blur(22px);
-    z-index: 0;
-    animation: auraPulse 4.5s ease-in-out infinite;
-}
-
-.zeus    { top: 4%;  left: 3%; }
-.poseidon{ top: 8%;  right: 3%; animation-delay: 1.2s; }
-.athena  { bottom: 6%; left: 4%; animation-delay: 2.1s; }
-.ares    { bottom: 3%; right: 4%; animation-delay: 0.6s; }
-
-.zeus .aura     { background: radial-gradient(circle, var(--aura-purple), transparent 70%); animation-delay: 0s; }
-.poseidon .aura { background: radial-gradient(circle, var(--aura-cyan), transparent 70%); animation-delay: 1s; }
-.athena .aura   { background: radial-gradient(circle, var(--aura-amber), transparent 70%); animation-delay: 2s; }
-.ares .aura     { background: radial-gradient(circle, var(--aura-red), transparent 70%); animation-delay: 0.5s; }
-
-@keyframes statueFloat {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50%      { transform: translateY(-14px) rotate(0.6deg); }
-}
-
-@keyframes auraPulse {
-    0%, 100% { opacity: 0.6; transform: scale(1); }
-    50%      { opacity: 1; transform: scale(1.15); }
-}
-
-/* Zeus lightning bolt */
-.bolt {
-    position: absolute;
-    top: -6%;
-    right: -14%;
-    width: 30%;
-    height: 46%;
-    z-index: 2;
-    background: linear-gradient(180deg, #fff6cf, var(--gold));
-    clip-path: polygon(55% 0%, 20% 45%, 45% 45%, 10% 100%, 80% 40%, 50% 40%);
-    filter: drop-shadow(0 0 6px #fff2a8) drop-shadow(0 0 14px var(--gold));
-    animation: flicker 2.6s linear infinite;
-}
-@keyframes flicker {
-    0%, 19%, 21%, 50%, 53%, 100% { opacity: 1; }
-    20%, 52% { opacity: 0.25; }
-    75% { opacity: 0.75; }
-}
-
-/* Poseidon trident */
-.trident {
-    position: absolute;
-    top: -26%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 34%;
-    height: 52%;
-    z-index: 2;
-}
-.trident::before {
-    content: "";
-    position: absolute;
-    left: 50%;
-    bottom: -6%;
-    width: 20%;
-    height: 92%;
-    background: linear-gradient(180deg, #d8f2f5, #6fb9c4);
-    transform: translateX(-50%);
-    border-radius: 3px;
-    filter: drop-shadow(0 0 6px var(--aura-cyan));
-}
-.trident .prong {
-    position: absolute;
-    top: 0;
-    width: 24%;
-    height: 62%;
-    background: linear-gradient(180deg, #eafcff, #7fc9d4);
-    border-radius: 50% 50% 0 0;
-    filter: drop-shadow(0 0 5px var(--aura-cyan));
-}
-.trident .prong.left  { left: 2%; transform: rotate(-14deg); }
-.trident .prong.mid   { left: 38%; height: 74%; }
-.trident .prong.right { right: 2%; transform: rotate(14deg); }
-
-/* Athena's owl */
-.owl {
-    position: absolute;
-    top: -12%;
-    right: -12%;
-    font-size: 1.8rem;
-    z-index: 2;
-    filter: drop-shadow(0 0 8px var(--aura-amber));
-    animation: owlBlink 5s ease-in-out infinite;
-}
-@keyframes owlBlink {
-    0%, 92%, 100% { transform: scaleY(1); }
-    95% { transform: scaleY(0.1); }
-}
-
-/* Ares' blade */
-.blade {
-    position: absolute;
-    top: -10%;
-    left: -22%;
-    width: 34%;
-    height: 66%;
-    z-index: 2;
-    transform: rotate(-18deg);
-    background: linear-gradient(180deg, #fbe4e4 0%, #f3d0d0 40%, #b23a3a 42%, #8f2a2a 100%);
-    clip-path: polygon(
-        50% 0%, 60% 58%, 78% 58%, 78% 66%, 60% 66%,
-        60% 78%, 68% 84%, 68% 92%, 60% 92%, 60% 100%,
-        40% 100%, 40% 92%, 32% 92%, 32% 84%, 40% 78%,
-        40% 66%, 22% 66%, 22% 58%, 40% 58%
-    );
-    filter: drop-shadow(0 0 8px var(--aura-red));
-    animation: bladeGleam 3.4s ease-in-out infinite;
-}
-@keyframes bladeGleam {
-    0%, 100% { filter: drop-shadow(0 0 8px var(--aura-red)) brightness(1); }
-    50%      { filter: drop-shadow(0 0 14px var(--aura-red)) brightness(1.3); }
-}
-
-@media (max-width: 720px) {
-    .pantheon { opacity: 0.6; }
-    .statue { width: 78px; }
-}
-
-/* ---------- Medusa centerpiece ---------- */
-.medusa-wrap {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    justify-content: center;
-    margin: calc(-1 * var(--space-10)) auto var(--space-2);
-    padding-top: var(--space-4);
-}
-
-.medusa-aura {
-    position: absolute;
-    top: 10%;
-    left: 50%;
-    width: 90%;
-    max-width: 420px;
-    aspect-ratio: 1;
-    transform: translateX(-50%);
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(140, 40, 170, 0.5), rgba(140, 40, 170, 0) 70%);
-    filter: blur(28px);
-    z-index: -1;
-    animation: mAuraPulse 5s ease-in-out infinite;
-}
-@keyframes mAuraPulse {
-    0%, 100% { opacity: 0.45; transform: translateX(-50%) scale(1); }
-    50%      { opacity: 0.85; transform: translateX(-50%) scale(1.1); }
-}
-
-.centerpiece.medusa { width: min(300px, 68vw); filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); }
-.centerpiece.medusa .bust-svg { overflow: visible; }
-
-.medusa .snake {
-    fill: none;
-    stroke: #cdc3a8;
-    stroke-width: 8;
-    stroke-linecap: round;
-    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
-    transform-box: fill-box;
-    transform-origin: 0% 100%;
-    animation: writhe 3.2s ease-in-out infinite;
-}
-.medusa .snake-head { fill: #cdc3a8; filter: drop-shadow(0 0 4px rgba(255,60,20,0.5)); }
-
-.medusa .snake:nth-child(odd)  { animation-duration: 2.6s; }
-.medusa .snake:nth-child(3n)   { animation-delay: 0.3s; }
-.medusa .snake:nth-child(4n)   { animation-delay: 0.7s; }
-.medusa .snake:nth-child(5n)   { animation-delay: 1.1s; }
-
-@keyframes writhe {
-    0%, 100% { transform: rotate(0deg); }
-    25%      { transform: rotate(-8deg); }
-    75%      { transform: rotate(8deg); }
-}
-
-.medusa .carve .eye {
-    fill: #ff4d2e;
-    animation: eyeGlow 2.2s ease-in-out infinite;
-}
-@keyframes eyeGlow {
-    0%, 100% { filter: drop-shadow(0 0 2px #ff5a2e); opacity: 0.85; }
-    50%      { filter: drop-shadow(0 0 9px #ff2200); opacity: 1; }
+    background-color: var(--ink-veil);
 }
 
 /* ---------- Banner ---------- */
@@ -360,8 +121,8 @@ body::before {
     inset: 0;
     z-index: 1;
     pointer-events: none;
-    background: linear-gradient(90deg, rgba(9, 9, 20, 0.92) 0%, rgba(9, 9, 20, 0.55) 38%, rgba(9, 9, 20, 0.25) 100%),
-                linear-gradient(rgba(10, 10, 25, 0.15), rgba(10, 10, 25, 0.55));
+    background: linear-gradient(90deg, rgba(14, 10, 7, 0.92) 0%, rgba(14, 10, 7, 0.55) 38%, rgba(14, 10, 7, 0.25) 100%),
+                linear-gradient(rgba(16, 11, 7, 0.15), rgba(16, 11, 7, 0.55));
 }
 
 .photo-credit {
@@ -399,7 +160,7 @@ body::before {
     inset: auto 0 0 0;
     height: 22%;
     z-index: 1;
-    background: linear-gradient(180deg, transparent, var(--bg));
+    background: linear-gradient(180deg, transparent, var(--ink));
     pointer-events: none;
 }
 
@@ -409,20 +170,20 @@ body::before {
 }
 
 .banner-overlay h1 {
-    font-family: var(--font-display);
+    font-family: var(--font-illuminated);
     font-size: 3rem;
     font-weight: 700;
     margin: 0;
     letter-spacing: 2px;
-    color: var(--gold-bright);
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 24px rgba(255, 217, 122, 0.35);
+    color: var(--gold-leaf-bright);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 24px rgba(232, 200, 119, 0.35);
 }
 
 .tagline {
     font-size: 1.3rem;
     font-style: italic;
     margin-top: var(--space-2);
-    color: var(--marble);
+    color: var(--parchment);
 }
 
 @media (min-width: 721px) {
@@ -437,8 +198,9 @@ main {
     margin: var(--space-10) auto;
     padding: var(--space-8) var(--space-6);
     /* Same fix as .dialogue-box: was 0.55, too transparent once the
-       statues behind it started casting real, dramatic shadows. */
-    background: rgba(8, 6, 16, 0.9);
+       statues behind it started casting real, dramatic shadows. Alpha
+       preserved exactly through the palette rework — only hue changed. */
+    background: var(--ink-card);
     border-radius: 14px;
     backdrop-filter: blur(6px);
 }
@@ -449,32 +211,36 @@ main {
     margin-bottom: var(--space-8);
 }
 
+/* Wax-seal stamp buttons — irregular seal silhouette via asymmetric
+   border-radius, radial "poured wax" gradient, and an embossed inset
+   shadow to fake a stamped relief. Replaces the old flat gold pill. */
 .join-btn {
-    background: var(--gold);
-    color: #1a1a2e;
+    background: radial-gradient(circle at 35% 30%, var(--wax-seal-bright), var(--wax-seal) 70%);
+    color: var(--parchment);
     border: none;
     padding: 0.9rem 2.2rem;
     font-family: var(--font-display);
     font-size: 1.05rem;
     font-weight: 700;
-    border-radius: 999px;
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.25), inset 0 -3px 6px rgba(0, 0, 0, 0.35);
     cursor: pointer;
     letter-spacing: 1px;
-    transition: transform 0.15s ease, background 0.15s ease;
+    transition: transform 0.15s ease, filter 0.15s ease;
 }
 
 .join-btn:hover {
-    background: var(--gold-bright);
-    transform: translateY(-2px);
+    transform: translateY(-2px) scale(1.03);
+    filter: brightness(1.1);
 }
 
 .trial-btn {
     display: inline-block;
     text-decoration: none;
-    background: linear-gradient(135deg, var(--gold-bright), var(--red));
+    background: radial-gradient(circle at 30% 25%, var(--gold-leaf-bright), var(--wax-seal) 75%);
     margin-top: 0.5rem;
 }
-.trial-btn:hover { transform: translateY(-2px); filter: brightness(1.08); }
+.trial-btn:hover { transform: translateY(-2px) scale(1.03); filter: brightness(1.1); }
 
 .thanks {
     font-size: 1.2rem;
@@ -484,7 +250,7 @@ main {
 .count {
     margin-top: var(--space-6);
     font-size: 0.9rem;
-    color: #9a9ab0;
+    color: var(--parchment-muted);
 }
 
 /* ---------- 3D scene pages (Trial / Olympus / Underworld) ---------- */
@@ -502,11 +268,11 @@ main {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--gold-dim);
+    color: var(--gold-leaf-dim);
     font-style: italic;
     font-size: 1.1rem;
     letter-spacing: 0.5px;
-    background: var(--bg);
+    background: var(--ink);
     animation: loadingPulse 1.6s ease-in-out infinite;
     pointer-events: none;
 }
@@ -542,23 +308,45 @@ main {
     /* Was 0.78 — with the dramatic-lighting pass's stronger, higher-res
        shadows, the statue's cast shadow showed through as a distracting
        dark smudge right behind the dialogue text. More opaque so the box
-       is legible no matter what shadow happens to fall behind it. */
-    background: rgba(9, 7, 16, 0.94);
-    border: 1px solid var(--gold-dim);
+       is legible no matter what shadow happens to fall behind it. Alpha
+       preserved exactly through the palette rework — only hue changed. */
+    background: var(--ink-card-strong);
+    border: 1px solid var(--gold-leaf-dim);
     border-radius: 10px;
     padding: var(--space-5) var(--space-6);
     backdrop-filter: blur(6px);
 }
 
 .speaker-name {
-    color: var(--gold);
+    color: var(--gold-leaf);
     font-family: var(--font-display);
     font-weight: 700;
     letter-spacing: 1px;
     margin-bottom: var(--space-2);
     text-transform: uppercase;
     font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
 }
+
+/* Per-god sigil, shown next to the speaker name via the dialogue box's
+   data-presenter attribute (set in trial.html/olympus.html/underworld.html). */
+.speaker-name::before {
+    content: "";
+    width: 20px;
+    height: 20px;
+    flex: none;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0.9;
+}
+.dialogue-box[data-presenter="zeus"] .speaker-name::before { background-image: url('sigils/zeus.svg'); }
+.dialogue-box[data-presenter="poseidon"] .speaker-name::before { background-image: url('sigils/poseidon.svg'); }
+.dialogue-box[data-presenter="athena"] .speaker-name::before { background-image: url('sigils/athena.svg'); }
+.dialogue-box[data-presenter="hades"] .speaker-name::before { background-image: url('sigils/hades.svg'); }
 
 .dialogue-text {
     min-height: 3.6em;
@@ -576,65 +364,88 @@ main {
     max-width: 560px;
 }
 
+/* Manuscript-rule outline buttons — a small ruled rectangle with a
+   corner flourish (the folded-corner tick drawn via ::before), evoking a
+   marginal note rather than a game-menu pill. */
 .riddle-btn {
+    position: relative;
     background: transparent;
-    color: #f0e6d2;
-    border: 2px solid var(--gold-dim);
-    padding: 0.6rem 1.3rem;
-    border-radius: 999px;
+    color: var(--parchment);
+    border: 1px solid var(--gold-leaf-dim);
+    border-radius: 4px;
+    padding: 0.6rem 1.3rem 0.6rem 1.7rem;
     font-size: 1rem;
     font-family: inherit;
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.15s ease;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
 }
-.riddle-btn:hover { background: rgba(255, 217, 122, 0.15); transform: translateY(-2px); }
+.riddle-btn::before {
+    content: "";
+    position: absolute;
+    left: 0.6rem;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    border-left: 1px solid var(--gold-leaf-dim);
+    border-bottom: 1px solid var(--gold-leaf-dim);
+    transform: translateY(-50%) rotate(45deg);
+    opacity: 0.7;
+    transition: opacity 0.2s ease, border-color 0.2s ease;
+}
+.riddle-btn:hover {
+    background: rgba(232, 200, 119, 0.12);
+    border-color: var(--gold-leaf-bright);
+    transform: translateY(-2px);
+}
+.riddle-btn:hover::before { opacity: 1; border-color: var(--gold-leaf-bright); }
 
 .back-link {
-    color: #9a9ab0;
+    color: var(--parchment-muted);
     font-size: 0.85rem;
     text-decoration: none;
     transition: color 0.2s ease;
 }
-.back-link:hover { color: var(--gold); }
+.back-link:hover { color: var(--gold-leaf); }
 
 .destiny-title {
-    font-family: var(--font-display);
+    font-family: var(--font-illuminated);
     font-weight: 700;
     font-size: 2.6rem;
     margin: 0 0 var(--space-2);
     text-shadow: 0 2px 10px rgba(0,0,0,0.6);
 }
-body[data-destiny="olympus"] .destiny-title { color: #fff3c4; text-shadow: 0 0 30px rgba(255, 220, 130, 0.7); }
-body[data-destiny="underworld"] .destiny-title { color: #ff8a6a; text-shadow: 0 0 30px rgba(200, 40, 20, 0.6); }
+body[data-destiny="olympus"] .destiny-title { color: var(--gold-leaf-bright); text-shadow: 0 0 30px rgba(232, 200, 119, 0.7); }
+body[data-destiny="underworld"] .destiny-title { color: #d3593f; text-shadow: 0 0 30px rgba(138, 31, 42, 0.7); }
 
 /* ---------- Audio control ---------- */
 .audio-btn {
     display: inline-block;
     margin: 1.75rem auto 0;
     background: transparent;
-    color: var(--gold);
-    border: 2px solid var(--gold-dim);
+    color: var(--gold-leaf);
+    border: 2px solid var(--gold-leaf-dim);
     padding: 0.55rem 1.4rem;
     font-family: var(--font-body);
     font-size: 0.95rem;
-    border-radius: 999px;
+    border-radius: 4px;
     cursor: pointer;
     letter-spacing: 0.5px;
     transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
 }
 .audio-btn:hover {
-    background: rgba(255, 217, 122, 0.1);
+    background: rgba(232, 200, 119, 0.1);
     transform: translateY(-2px);
 }
 .audio-btn.playing {
-    background: var(--gold);
-    color: #1a1a2e;
-    box-shadow: 0 0 18px rgba(255, 217, 122, 0.5);
+    background: var(--wax-seal);
+    border-color: var(--wax-seal);
+    color: var(--parchment);
+    box-shadow: 0 0 18px rgba(178, 50, 68, 0.5);
 }
 
 .audio-note {
     font-size: 0.75rem;
-    color: #7d7d95;
+    color: var(--parchment-muted);
     margin-top: 0.5rem;
 }
 
@@ -642,9 +453,11 @@ body[data-destiny="underworld"] .destiny-title { color: #ff8a6a; text-shadow: 0 
 @media (max-width: 600px) {
     /* Cinzel sets noticeably wider than the old Georgia fallback — at the
        previous 2.1rem/1px-letter-spacing this clipped past the viewport
-       edge on narrow phones (no horizontal padding existed to buffer it). */
+       edge on narrow phones (no horizontal padding existed to buffer it).
+       Uncial Antiqua (the illuminated-grimoire display face) is wider
+       again, so the size is dropped further here with a wrap fallback. */
     .banner-overlay { padding: 0 var(--space-5); }
-    .banner-overlay h1 { font-size: 1.7rem; letter-spacing: 0; }
+    .banner-overlay h1 { font-size: 1.9rem; letter-spacing: 0; overflow-wrap: break-word; }
     .tagline { font-size: 1rem; }
 
     main { margin: var(--space-6) auto; padding: var(--space-6) 1.1rem; }
@@ -652,7 +465,10 @@ body[data-destiny="underworld"] .destiny-title { color: #ff8a6a; text-shadow: 0 
 
     .dialogue-box { padding: var(--space-4) 1.1rem; }
     .dialogue-text { font-size: 1rem; }
-    .destiny-title { font-size: 1.9rem; }
+    /* Uncial Antiqua runs noticeably wider than Cinzel (the face this was
+       tuned for previously) — dropped further and given a wrap fallback so
+       "You Have Ascended"/"You Have Fallen" don't clip on narrow phones. */
+    .destiny-title { font-size: 2.4rem; overflow-wrap: break-word; }
 
     .riddle-form { flex-direction: column; align-items: stretch; gap: var(--space-2); }
     .riddle-btn { padding: 0.6rem 1rem; font-size: 0.9rem; }
@@ -665,6 +481,7 @@ body[data-destiny="underworld"] .destiny-title { color: #ff8a6a; text-shadow: 0 
 
 @media (max-width: 400px) {
     .banner-overlay h1 { font-size: 1.45rem; }
+    .destiny-title { font-size: 1.9rem; }
 }
 
 /* ---------- Audio entry gate ----------
@@ -680,7 +497,7 @@ body[data-destiny="underworld"] .destiny-title { color: #ff8a6a; text-shadow: 0 
     align-items: center;
     justify-content: center;
     gap: var(--space-4);
-    background: rgba(6, 5, 12, 0.88);
+    background: var(--ink-veil-strong);
     backdrop-filter: blur(6px);
     cursor: pointer;
     text-align: center;
@@ -688,15 +505,15 @@ body[data-destiny="underworld"] .destiny-title { color: #ff8a6a; text-shadow: 0 
     transition: opacity 0.5s ease;
 }
 .temple-gate h2 {
-    font-family: var(--font-display);
-    color: var(--gold-bright);
+    font-family: var(--font-illuminated);
+    color: var(--gold-leaf-bright);
     font-size: 1.8rem;
     letter-spacing: 2px;
     margin: 0;
-    text-shadow: 0 0 24px rgba(255, 217, 122, 0.35);
+    text-shadow: 0 0 24px rgba(232, 200, 119, 0.35);
 }
 .temple-gate p {
-    color: var(--marble);
+    color: var(--parchment);
     font-size: 1.05rem;
     opacity: 0.75;
     margin: 0;
@@ -711,9 +528,9 @@ body[data-destiny="underworld"] .destiny-title { color: #ff8a6a; text-shadow: 0 
     width: 34px;
     height: 34px;
     border-radius: 50%;
-    border: 1px solid rgba(212, 175, 55, 0.4);
-    background: rgba(8, 6, 16, 0.4);
-    color: rgba(240, 230, 210, 0.6);
+    border: 1px solid rgba(189, 149, 72, 0.4);
+    background: rgba(20, 14, 8, 0.4);
+    color: rgba(239, 227, 200, 0.6);
     font-family: var(--font-body);
     font-size: 0.95rem;
     line-height: 1;
@@ -724,7 +541,7 @@ body[data-destiny="underworld"] .destiny-title { color: #ff8a6a; text-shadow: 0 
     transition: opacity 0.2s ease, background 0.2s ease, transform 0.15s ease;
     opacity: 0.55;
 }
-.mute-toggle:hover { opacity: 1; background: rgba(8, 6, 16, 0.7); transform: translateY(-2px); }
+.mute-toggle:hover { opacity: 1; background: rgba(20, 14, 8, 0.7); transform: translateY(-2px); }
 /* Every interactive element gets the same gold focus ring instead of
    each browser's mismatched default (blue on Chrome/Edge, different on
    Firefox/Safari) — was previously only set for the two newest elements. */
@@ -734,12 +551,14 @@ body[data-destiny="underworld"] .destiny-title { color: #ff8a6a; text-shadow: 0 
 .riddle-btn:focus-visible,
 .audio-btn:focus-visible,
 .back-link:focus-visible {
-    outline: 2px solid var(--gold-bright);
+    outline: 2px solid var(--gold-leaf-bright);
     outline-offset: 2px;
 }
-.mute-toggle.muted { color: var(--red); border-color: rgba(122, 31, 31, 0.6); }
+.mute-toggle.muted { color: var(--wax-seal); border-color: rgba(138, 31, 42, 0.6); }
 
-/* ---------- Ambient dust motes ----------
+/* ---------- Ambient embers (built as .dust-field/.dust-mote by
+   atmosphere.js — class names unchanged, only recolored/reglowed here to
+   read as drifting candle embers instead of dust) ----------
    Pure CSS keyframe animation on transform+opacity only — compositor-
    driven, no per-frame JS, no canvas/WebGL. Sits above the 3D canvas
    (z-index 0) so it reads as atmosphere in the scene, below dialogue
@@ -757,17 +576,17 @@ body[data-destiny="underworld"] .destiny-title { color: #ff8a6a; text-shadow: 0 
     width: 3px;
     height: 3px;
     border-radius: 50%;
-    background: var(--gold-bright);
+    background: radial-gradient(circle, var(--gold-leaf-bright), var(--wax-seal-bright) 85%);
     opacity: 0;
-    filter: drop-shadow(0 0 2px var(--gold-bright));
+    filter: drop-shadow(0 0 3px var(--wax-seal-bright));
     animation-name: dustDrift;
     animation-timing-function: linear;
     animation-iteration-count: infinite;
 }
 @keyframes dustDrift {
     0%   { transform: translate(0, 0); opacity: 0; }
-    10%  { opacity: 0.5; }
-    90%  { opacity: 0.35; }
+    10%  { opacity: 0.6; }
+    90%  { opacity: 0.3; }
     100% { transform: translate(20px, -110vh); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
